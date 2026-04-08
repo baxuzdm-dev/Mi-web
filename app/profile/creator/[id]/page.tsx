@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   ArrowLeft,
   Send,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +16,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { formatNumber, formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import EditProfileModal from "@/components/EditProfileModal";
+import SocialLinksSection from "@/components/SocialLinksSection";
+
+type SocialLinks = Record<string, Record<string, unknown>>;
 
 interface CreatorProfile {
   id: string;
+  userId: string;
   username: string;
   avatar?: string;
   bio?: string;
@@ -28,6 +34,7 @@ interface CreatorProfile {
   platforms: string[];
   isVerified: boolean;
   isAvailable: boolean;
+  socialLinks?: SocialLinks;
   user: { name?: string; image?: string };
 }
 
@@ -42,6 +49,7 @@ export default function CreatorProfilePage() {
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     fetch(`/api/creators/${id}`)
@@ -52,14 +60,13 @@ export default function CreatorProfilePage() {
       });
   }, [id]);
 
+  const isOwner = session?.user?.id === profile?.userId;
+
   async function handleApply(e: React.FormEvent) {
     e.preventDefault();
     if (!session) { router.push("/login"); return; }
     setApplying(true);
     setError("");
-
-    // Agency applies to creator — not standard flow
-    // This page is for agencies viewing creators
     setApplying(false);
     setApplicationStatus("sent");
     setShowApplyForm(false);
@@ -128,6 +135,18 @@ export default function CreatorProfilePage() {
                   </div>
                 )}
               </div>
+
+              {/* Edit Profile button — owner only */}
+              {isOwner && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 shrink-0"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Edit Profile
+                </Button>
+              )}
             </div>
 
             {profile.bio && (
@@ -153,6 +172,16 @@ export default function CreatorProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* Social Platforms */}
+          <SocialLinksSection
+            profileId={profile.id}
+            isOwner={isOwner}
+            initialLinks={(profile.socialLinks ?? {}) as SocialLinks}
+            onUpdated={(updated) =>
+              setProfile((p) => p ? { ...p, socialLinks: updated as SocialLinks } : p)
+            }
+          />
 
           {/* Niches */}
           {profile.niche.length > 0 && (
@@ -234,6 +263,17 @@ export default function CreatorProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowEditModal(false)}
+          onSaved={(updated) => {
+            setProfile((p) => p ? { ...p, ...updated } : p);
+          }}
+        />
+      )}
     </div>
   );
 }

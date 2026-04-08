@@ -84,6 +84,7 @@ model CreatorProfile {
   platforms       String[]
   isVerified      Boolean  @default(false)
   isAvailable     Boolean  @default(true)
+  socialLinks     Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
