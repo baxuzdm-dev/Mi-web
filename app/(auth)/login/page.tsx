@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { Zap, Mail, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,13 +32,17 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Invalid email or password");
     } else {
-      router.push("/onboarding");
-      router.refresh();
+      // Read role from the fresh session to redirect to the right place
+      const session = await getSession();
+      if (session?.user?.role === "CREATOR") router.push("/creator");
+      else if (session?.user?.role === "AGENCY") router.push("/agency");
+      else router.push("/onboarding");
     }
   }
 
   async function handleGoogle() {
-    await signIn("google", { callbackUrl: "/onboarding" });
+    // callbackUrl handled by middleware after Google redirects back
+    await signIn("google", { callbackUrl: "/auth/redirect" });
   }
 
   return (

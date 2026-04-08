@@ -6,17 +6,23 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // If authenticated but no role, redirect to onboarding (except if already there)
+    // If user already has a role and tries to access onboarding, send to dashboard
+    if (token?.role && pathname === "/onboarding") {
+      const dest = token.role === "CREATOR" ? "/creator" : "/agency";
+      return NextResponse.redirect(new URL(dest, req.url));
+    }
+
+    // If authenticated but no role yet, redirect to onboarding
     if (token && !token.role && pathname !== "/onboarding") {
       return NextResponse.redirect(new URL("/onboarding", req.url));
     }
 
-    // Protect creator routes
+    // Protect creator dashboard
     if (pathname.startsWith("/creator") && token?.role !== "CREATOR") {
       return NextResponse.redirect(new URL("/onboarding", req.url));
     }
 
-    // Protect agency routes
+    // Protect agency dashboard
     if (pathname.startsWith("/agency") && token?.role !== "AGENCY") {
       return NextResponse.redirect(new URL("/onboarding", req.url));
     }
@@ -27,13 +33,14 @@ export default withAuth(
     callbacks: {
       authorized({ token, req }) {
         const { pathname } = req.nextUrl;
-        // Public routes
+        // Public routes — no token required
         if (
           pathname === "/" ||
           pathname.startsWith("/explore") ||
           pathname.startsWith("/profile") ||
           pathname.startsWith("/login") ||
           pathname.startsWith("/register") ||
+          pathname.startsWith("/auth/redirect") ||
           pathname.startsWith("/api/auth")
         ) {
           return true;
