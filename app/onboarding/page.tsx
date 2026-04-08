@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowRight, Users, Building2, Plus, X } from "lucide-react";
+import { ArrowRight, Users, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ const COUNTRIES = ["United States", "United Kingdom", "Canada", "Australia", "Ge
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session, update } = useSession();
+  const { update } = useSession();
   const [step, setStep] = useState<"role" | "profile">("role");
   const [role, setRole] = useState<"CREATOR" | "AGENCY">("CREATOR");
   const [loading, setLoading] = useState(false);
@@ -94,7 +94,7 @@ export default function OnboardingPage() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md text-center">
           <h1 className="text-3xl font-bold text-white mb-3">Welcome to FanConnect!</h1>
-          <p className="text-white/50 mb-10">Let's set up your profile. What are you?</p>
+          <p className="text-white/50 mb-10">Let&apos;s set up your profile. What are you?</p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             {role === "CREATOR" ? "Set up your creator profile" : "Set up your agency profile"}
           </h1>
-          <p className="text-white/50">This is how you'll appear to {role === "CREATOR" ? "agencies" : "creators"}</p>
+          <p className="text-white/50">This is how you&apos;ll appear to {role === "CREATOR" ? "agencies" : "creators"}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -51,7 +51,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
 
-    let channel: any = null;
+    let channel: ReturnType<ReturnType<typeof getPusherClient>["subscribe"]> | null = null;
 
     try {
       const pusher = getPusherClient();
@@ -175,7 +175,7 @@ export default function ChatPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  sendMessage(e as any);
+                  sendMessage(e as React.FormEvent);
                 }
               }}
             />

@@ -184,7 +184,7 @@ export default function AgencyProfilePage() {
                     <ShieldCheck className="w-5 h-5 text-emerald-400" />
                   </div>
                   <p className="text-sm text-emerald-300">Application sent!</p>
-                  <p className="text-xs text-white/40 mt-1">They'll review and respond soon.</p>
+                  <p className="text-xs text-white/40 mt-1">They&apos;ll review and respond soon.</p>
                 </div>
               ) : showApplyForm ? (
                 <form onSubmit={handleApply} className="space-y-3">

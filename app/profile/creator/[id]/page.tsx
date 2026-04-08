@@ -5,8 +5,6 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import {
   MapPin,
-  Users,
-  DollarSign,
   ShieldCheck,
   ArrowLeft,
   Send,

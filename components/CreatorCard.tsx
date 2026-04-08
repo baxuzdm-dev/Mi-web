@@ -23,7 +23,7 @@ interface CreatorCardProps {
   onApply?: () => void;
 }
 
-export default function CreatorCard({ creator, showApply, onApply }: CreatorCardProps) {
+export default function CreatorCard({ creator }: CreatorCardProps) {
   const displayName = creator.user?.name ?? creator.username;
   const avatar = creator.avatar ?? creator.user?.image;
 

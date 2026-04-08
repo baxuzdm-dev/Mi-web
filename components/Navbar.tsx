@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
-import { MessageSquare, Search, LayoutDashboard, LogOut, User, Menu, X, Zap } from "lucide-react";
+import { MessageSquare, Search, LayoutDashboard, LogOut, Menu, X, Zap } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 

@@ -207,7 +207,7 @@ export default function AgencyDashboard() {
                             ))}
                           </div>
                           {app.message && (
-                            <p className="text-sm text-white/60 mt-2 italic">"{app.message}"</p>
+                            <p className="text-sm text-white/60 mt-2 italic">&quot;{app.message}&quot;</p>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">

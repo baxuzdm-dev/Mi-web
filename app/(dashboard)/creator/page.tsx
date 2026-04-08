@@ -11,7 +11,6 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  XCircle,
   Search,
   ArrowRight,
   ShieldCheck,
@@ -20,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatNumber, formatCurrency, timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
 
 interface Application {
   id: string;
@@ -64,7 +63,7 @@ export default function CreatorDashboard() {
     Promise.all([
       fetch("/api/creators").then((r) => r.json()),
       fetch("/api/applications?role=CREATOR").then((r) => r.json()),
-    ]).then(([_, apps]) => {
+    ]).then(([, apps]) => {
       setApplications(apps);
       setLoading(false);
     });
@@ -86,7 +85,6 @@ export default function CreatorDashboard() {
 
   const pending = applications.filter((a) => a.status === "PENDING");
   const accepted = applications.filter((a) => a.status === "ACCEPTED");
-  const rejected = applications.filter((a) => a.status === "REJECTED");
 
   if (status === "loading" || loading) {
     return (
@@ -104,7 +102,7 @@ export default function CreatorDashboard() {
           <h1 className="text-2xl font-bold text-white">
             Hey, {session?.user?.name?.split(" ")[0]} 👋
           </h1>
-          <p className="text-white/50 mt-1">Here's an overview of your activity</p>
+          <p className="text-white/50 mt-1">Here&apos;s an overview of your activity</p>
         </div>
         <Link href="/explore/agencies">
           <Button variant="gradient" className="gap-2">
