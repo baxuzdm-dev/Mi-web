@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
-import { MessageSquare, Search, LayoutDashboard, LogOut, Menu, X, Zap } from "lucide-react";
+import { MessageSquare, LayoutDashboard, LogOut, Menu, X, Zap, Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
@@ -26,54 +26,71 @@ export default function Navbar() {
             <span className="text-white">FanConnect</span>
           </Link>
 
-          {/* Desktop Nav */}
+          {/* Desktop Nav links */}
           <div className="hidden md:flex items-center gap-1">
-            <Link href="/explore/creators">
-              <Button variant="ghost" size="sm" className="gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/explore/creators" className="gap-2 flex items-center">
                 <Search className="w-4 h-4" /> Creators
-              </Button>
-            </Link>
-            <Link href="/explore/agencies">
-              <Button variant="ghost" size="sm" className="gap-2">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/explore/agencies" className="gap-2 flex items-center">
                 <Search className="w-4 h-4" /> Agencies
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             {session ? (
               <>
-                <Link href="/chat">
-                  <Button variant="ghost" size="icon" className="hidden md:flex">
+                {/* Messages */}
+                <Button asChild variant="ghost" size="icon" className="hidden md:flex">
+                  <Link href="/chat" aria-label="Messages">
                     <MessageSquare className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Link href={dashboardHref}>
-                  <Button variant="ghost" size="icon" className="hidden md:flex">
+                  </Link>
+                </Button>
+
+                {/* Dashboard */}
+                <Button asChild variant="ghost" size="icon" className="hidden md:flex">
+                  <Link href={dashboardHref} aria-label="Dashboard">
                     <LayoutDashboard className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                  </Link>
+                </Button>
+
+                {/* Avatar → profile page */}
+                <Link
+                  href="/me"
+                  aria-label="My profile"
+                  className="hidden md:flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
-                  <Avatar className="w-7 h-7">
+                  <Avatar className="w-8 h-8 hover:ring-2 hover:ring-violet-500 transition-all">
                     <AvatarImage src={session.user?.image ?? ""} />
                     <AvatarFallback className="text-xs">
                       {session.user?.name?.[0]?.toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
-                </button>
+                </Link>
+
+                {/* Sign out */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden md:flex text-white/50 hover:text-red-400"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </>
             ) : (
               <div className="hidden md:flex items-center gap-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">Sign in</Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="gradient" size="sm">Get started</Button>
-                </Link>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button asChild variant="gradient" size="sm">
+                  <Link href="/register">Get started</Link>
+                </Button>
               </div>
             )}
 
@@ -91,28 +108,39 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="md:hidden border-t border-white/8 bg-[#0a0a0f]/95 px-4 py-4 space-y-2">
-          <Link href="/explore/creators" onClick={() => setMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2">
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link href="/explore/creators" onClick={() => setMenuOpen(false)}>
               <Search className="w-4 h-4" /> Explore Creators
-            </Button>
-          </Link>
-          <Link href="/explore/agencies" onClick={() => setMenuOpen(false)}>
-            <Button variant="ghost" className="w-full justify-start gap-2">
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link href="/explore/agencies" onClick={() => setMenuOpen(false)}>
               <Search className="w-4 h-4" /> Explore Agencies
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           {session ? (
             <>
-              <Link href="/chat" onClick={() => setMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start gap-2">
+              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                <Link href="/chat" onClick={() => setMenuOpen(false)}>
                   <MessageSquare className="w-4 h-4" /> Messages
-                </Button>
-              </Link>
-              <Link href={dashboardHref} onClick={() => setMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start gap-2">
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                <Link href={dashboardHref} onClick={() => setMenuOpen(false)}>
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
-                </Button>
-              </Link>
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+                <Link href="/me" onClick={() => setMenuOpen(false)}>
+                  <Avatar className="w-5 h-5">
+                    <AvatarImage src={session.user?.image ?? ""} />
+                    <AvatarFallback className="text-xs">
+                      {session.user?.name?.[0]?.toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  My Profile
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-2 text-red-400"
@@ -123,12 +151,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login" onClick={() => setMenuOpen(false)}>
-                <Button variant="ghost" className="w-full">Sign in</Button>
-              </Link>
-              <Link href="/register" onClick={() => setMenuOpen(false)}>
-                <Button variant="gradient" className="w-full">Get started</Button>
-              </Link>
+              <Button asChild variant="ghost" className="w-full">
+                <Link href="/login" onClick={() => setMenuOpen(false)}>Sign in</Link>
+              </Button>
+              <Button asChild variant="gradient" className="w-full">
+                <Link href="/register" onClick={() => setMenuOpen(false)}>Get started</Link>
+              </Button>
             </>
           )}
         </div>
