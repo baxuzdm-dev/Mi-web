@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CREATOR
+  AGENCY
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  creatorProfile CreatorProfile?
+  agencyProfile  AgencyProfile?
+  sentMessages   Message[]      @relation("SentMessages")
+  conversations  Conversation[] @relation("ConversationParticipants")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CreatorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  username        String   @unique
+  avatar          String?
+  bio             String?  @db.Text
+  country         String?
+  niche           String[]
+  followers       Int      @default(0)
+  estimatedIncome Int      @default(0)
+  platforms       String[]
+  isVerified      Boolean  @default(false)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+}
+
+model AgencyProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  logo        String?
+  description String?  @db.Text
+  services    String[]
+  commission  Float    @default(20)
+  website     String?
+  country     String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  creatorId String
+  agencyId  String
+  status    ApplicationStatus @default(PENDING)
+  message   String?           @db.Text
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  creator      CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  agency       AgencyProfile  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  conversation Conversation?
+
+  @@unique([creatorId, agencyId])
+}
+
+model Conversation {
+  id            String   @id @default(cuid())
+  applicationId String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  application  Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  messages     Message[]
+  participants User[]      @relation("ConversationParticipants")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
