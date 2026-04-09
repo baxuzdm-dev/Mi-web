@@ -50,7 +50,7 @@ export default function RegisterPage() {
   }
 
   async function handleGoogle() {
-    await signIn("google", { callbackUrl: "/onboarding" });
+    await signIn("google", { callbackUrl: "/auth/redirect" });
   }
 
   return (

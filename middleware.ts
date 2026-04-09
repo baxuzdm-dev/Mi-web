@@ -41,7 +41,9 @@ export default withAuth(
           pathname.startsWith("/login") ||
           pathname.startsWith("/register") ||
           pathname.startsWith("/auth/redirect") ||
-          pathname.startsWith("/api/auth")
+          pathname.startsWith("/api/auth") ||
+          pathname.startsWith("/api/creators") ||
+          pathname.startsWith("/api/agencies")
         ) {
           return true;
         }
