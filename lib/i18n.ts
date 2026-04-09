@@ -18,7 +18,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "landing.badge": "The #1 marketplace for creator-agency deals",
     "landing.headline1": "Where Top Creators",
     "landing.headline2": "Meet Elite Agencies",
-    "landing.sub": "FanConnect is the premium marketplace where content creators find management agencies that help them scale. Verified profiles, smart matching, real-time communication.",
+    "landing.sub": "Mundo Creadores is the premium marketplace where content creators find management agencies that help them scale. Verified profiles, smart matching, real-time communication.",
     "landing.cta": "Get Started Free",
     "landing.exploreCreators": "Explore Creators",
     "landing.noCreditCard": "No credit card required • Free to join",
@@ -54,7 +54,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "landing.testimonials": "Testimonials",
     "landing.testimonialsTitle": "Real results from real people",
     "landing.ctaTitle": "Ready to level up?",
-    "landing.ctaSub": "Join thousands of creators and agencies already using FanConnect.",
+    "landing.ctaSub": "Join thousands of creators and agencies already using Mundo Creadores.",
     "landing.startFree": "Start for free",
     "landing.browseAgencies": "Browse Agencies",
     "landing.freeToJoin": "Free to join",
@@ -91,7 +91,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "register.agency": "Agency",
 
     // Onboarding
-    "onboarding.welcome": "Welcome to FanConnect!",
+    "onboarding.welcome": "Welcome to Mundo Creadores!",
     "onboarding.whatAreYou": "Let's set up your profile. What are you?",
     "onboarding.creator": "Content Creator",
     "onboarding.creatorSub": "OnlyFans, Fansly, etc.",
@@ -228,7 +228,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "landing.badge": "El marketplace #1 para creadores y agencias",
     "landing.headline1": "Donde los Mejores Creadores",
     "landing.headline2": "Conocen las Élite Agencias",
-    "landing.sub": "FanConnect es el marketplace premium donde los creadores de contenido encuentran agencias de management que los ayudan a crecer. Perfiles verificados, matching inteligente, comunicación en tiempo real.",
+    "landing.sub": "Mundo Creadores es el marketplace premium donde los creadores de contenido encuentran agencias de management que los ayudan a crecer. Perfiles verificados, matching inteligente, comunicación en tiempo real.",
     "landing.cta": "Comenzar Gratis",
     "landing.exploreCreators": "Explorar Creadores",
     "landing.noCreditCard": "Sin tarjeta de crédito • Gratis para unirte",
@@ -264,7 +264,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "landing.testimonials": "Testimonios",
     "landing.testimonialsTitle": "Resultados reales de personas reales",
     "landing.ctaTitle": "¿Listo para subir de nivel?",
-    "landing.ctaSub": "Únete a miles de creadores y agencias que ya usan FanConnect.",
+    "landing.ctaSub": "Únete a miles de creadores y agencias que ya usan Mundo Creadores.",
     "landing.startFree": "Empezar gratis",
     "landing.browseAgencies": "Ver Agencias",
     "landing.freeToJoin": "Gratis para unirse",
@@ -301,7 +301,7 @@ const translations: Record<Lang, Record<string, string>> = {
     "register.agency": "Agencia",
 
     // Onboarding
-    "onboarding.welcome": "¡Bienvenido a FanConnect!",
+    "onboarding.welcome": "¡Bienvenido a Mundo Creadores!",
     "onboarding.whatAreYou": "Configuremos tu perfil. ¿Qué eres?",
     "onboarding.creator": "Creador de Contenido",
     "onboarding.creatorSub": "OnlyFans, Fansly, etc.",

@@ -21,7 +21,7 @@ export function useLang() {
 
 function detectLang(): Lang {
   try {
-    const saved = localStorage.getItem("fanconnect-lang") as Lang | null;
+    const saved = localStorage.getItem("mundocreadores-lang") as Lang | null;
     if (saved === "en" || saved === "es") return saved;
     const browserLang = navigator.language ?? "";
     if (SPANISH_LOCALES.has(browserLang) || browserLang.startsWith("es")) return "es";
@@ -40,7 +40,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
 
   function setLang(l: Lang) {
     setLangState(l);
-    try { localStorage.setItem("fanconnect-lang", l); } catch { /* ignore */ }
+    try { localStorage.setItem("mundocreadores-lang", l); } catch { /* ignore */ }
   }
 
   return (

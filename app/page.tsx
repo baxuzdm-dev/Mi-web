@@ -26,7 +26,7 @@ const testimonials = [
   {
     name: "Elite Talent Agency",
     role: "Management Agency",
-    text: "We've onboarded 40+ creators through FanConnect. The quality of talent here is unmatched.",
+    text: "We've onboarded 40+ creators through Mundo Creadores. The quality of talent here is unmatched.",
     creators: "120+",
   },
   {
@@ -244,9 +244,9 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white" />
             </div>
-            FanConnect
+            Mundo Creadores
           </div>
-          <p className="text-white/30 text-sm">© {new Date().getFullYear()} FanConnect. All rights reserved.</p>
+          <p className="text-white/30 text-sm">© {new Date().getFullYear()} Mundo Creadores. All rights reserved.</p>
           <div className="flex gap-6 text-sm text-white/40">
             <Link href="/explore/creators" className="hover:text-white transition-colors">{t("nav.creators")}</Link>
             <Link href="/explore/agencies" className="hover:text-white transition-colors">{t("nav.agencies")}</Link>
