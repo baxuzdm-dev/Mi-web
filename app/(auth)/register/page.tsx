@@ -64,7 +64,7 @@ export default function RegisterPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center">
               <Zap className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="text-white">FanConnect</span>
+            <span className="text-white">Mundo Creadores</span>
           </Link>
           <h1 className="text-2xl font-bold text-white mt-6 mb-2">Create your account</h1>
           <p className="text-white/50">Join thousands of creators and agencies</p>
