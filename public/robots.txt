@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /chat
+Disallow: /me
+
+Sitemap: https://mundocreadores.com/sitemap.xml
