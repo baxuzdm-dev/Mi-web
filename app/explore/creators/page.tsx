@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import CreatorCard from "@/components/CreatorCard";
 import { useLang } from "@/contexts/LangContext";
 import { COUNTRIES } from "@/lib/countries";
+import { mockCreators, filterCreators } from "@/lib/mockData";
 
 const NICHES = ["Fitness", "Lifestyle", "Gaming", "Beauty", "Travel", "Food", "Fashion", "Music", "Art", "Tech", "Cosplay"];
 
@@ -47,7 +48,34 @@ export default function ExploreCreatorsPage() {
     const timer = setTimeout(() => {
       fetch(`/api/creators?${params.toString()}`)
         .then((r) => r.json())
-        .then((data) => { setCreators(data); setLoading(false); });
+        .then((data: Creator[]) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCreators(data);
+          } else {
+            setCreators(
+              filterCreators(mockCreators, {
+                search: search || undefined,
+                niche: selectedNiche || undefined,
+                country: selectedCountry || undefined,
+                minFollowers: minFollowers ? Number(minFollowers) : undefined,
+                verifiedOnly: verifiedOnly || undefined,
+              })
+            );
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setCreators(
+            filterCreators(mockCreators, {
+              search: search || undefined,
+              niche: selectedNiche || undefined,
+              country: selectedCountry || undefined,
+              minFollowers: minFollowers ? Number(minFollowers) : undefined,
+              verifiedOnly: verifiedOnly || undefined,
+            })
+          );
+          setLoading(false);
+        });
     }, 300);
     return () => clearTimeout(timer);
   }, [search, selectedNiche, selectedCountry, minFollowers, verifiedOnly]);

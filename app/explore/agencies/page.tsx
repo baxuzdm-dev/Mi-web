@@ -5,6 +5,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AgencyCard from "@/components/AgencyCard";
+import { mockAgencies, filterAgencies } from "@/lib/mockData";
 
 const COUNTRIES = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Brazil", "Colombia", "Mexico"];
 
@@ -41,8 +42,30 @@ export default function ExploreAgenciesPage() {
     const timer = setTimeout(() => {
       fetch(`/api/agencies?${params.toString()}`)
         .then((r) => r.json())
-        .then((data) => {
-          setAgencies(data);
+        .then((data: Agency[]) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setAgencies(data);
+          } else {
+            setAgencies(
+              filterAgencies(mockAgencies, {
+                search: search || undefined,
+                country: selectedCountry || undefined,
+                maxCommission: maxCommission ? Number(maxCommission) : undefined,
+                verifiedOnly: verifiedOnly || undefined,
+              })
+            );
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setAgencies(
+            filterAgencies(mockAgencies, {
+              search: search || undefined,
+              country: selectedCountry || undefined,
+              maxCommission: maxCommission ? Number(maxCommission) : undefined,
+              verifiedOnly: verifiedOnly || undefined,
+            })
+          );
           setLoading(false);
         });
     }, 300);
