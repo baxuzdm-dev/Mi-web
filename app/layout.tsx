@@ -7,12 +7,12 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FanConnect — Where Creators Meet Agencies",
+  title: "Mundo Creadores — Where Creators Meet Agencies",
   description:
     "The premium marketplace connecting content creators with top talent agencies. Grow your brand, find the right management team.",
   keywords: ["content creators", "agency", "OnlyFans", "management", "marketplace"],
   openGraph: {
-    title: "FanConnect — Where Creators Meet Agencies",
+    title: "Mundo Creadores — Where Creators Meet Agencies",
     description: "The premium marketplace connecting content creators with top talent agencies.",
     type: "website",
   },

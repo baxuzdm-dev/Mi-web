@@ -55,7 +55,7 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center">
               <Zap className="w-4.5 h-4.5 text-white" />
             </div>
-            <span className="text-white">FanConnect</span>
+            <span className="text-white">Mundo Creadores</span>
           </Link>
           <h1 className="text-2xl font-bold text-white mt-6 mb-2">Welcome back</h1>
           <p className="text-white/50">Sign in to your account</p>
