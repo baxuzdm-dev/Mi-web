@@ -1,0 +1,51 @@
+// Ordered: major anglophone first, then all Spanish-speaking, then others
+export const COUNTRIES: string[] = [
+  // Anglophone
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Australia",
+  "Ireland",
+  "New Zealand",
+  // Spanish-speaking (all 21)
+  "México",
+  "España",
+  "Argentina",
+  "Colombia",
+  "Chile",
+  "Venezuela",
+  "Perú",
+  "Ecuador",
+  "Guatemala",
+  "Cuba",
+  "Bolivia",
+  "República Dominicana",
+  "Honduras",
+  "Paraguay",
+  "El Salvador",
+  "Nicaragua",
+  "Costa Rica",
+  "Panamá",
+  "Uruguay",
+  "Guinea Ecuatorial",
+  "Puerto Rico",
+  // Other large markets
+  "Brazil",
+  "France",
+  "Germany",
+  "Italy",
+  "Netherlands",
+  "Portugal",
+  "Japan",
+  "South Korea",
+  "India",
+  "Other",
+];
+
+export const SPANISH_COUNTRIES = new Set([
+  "México", "Mexico", "España", "Spain", "Argentina", "Colombia", "Chile",
+  "Venezuela", "Perú", "Peru", "Ecuador", "Guatemala", "Cuba", "Bolivia",
+  "República Dominicana", "Dominican Republic", "Honduras", "Paraguay",
+  "El Salvador", "Nicaragua", "Costa Rica", "Panamá", "Panama", "Uruguay",
+  "Guinea Ecuatorial", "Equatorial Guinea", "Puerto Rico",
+]);

@@ -7,6 +7,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useLang } from "@/contexts/LangContext";
+import { COUNTRIES } from "@/lib/countries";
 
 const NICHES = [
   "Fitness", "Lifestyle", "Art", "Music", "Gaming", "Cooking",
@@ -32,6 +34,7 @@ interface Props {
 }
 
 export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
+  const { t } = useLang();
   const [form, setForm] = useState({
     username: profile.username,
     bio: profile.bio ?? "",
@@ -53,10 +56,9 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
     }));
   }
 
-  async function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Convert to base64 data URL for preview and storage
     const reader = new FileReader();
     reader.onload = (ev) => {
       const url = ev.target?.result as string;
@@ -92,12 +94,11 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0f0f17] p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Edit Profile</h2>
+          <h2 className="text-xl font-bold text-white">{t("edit.title")}</h2>
           <button onClick={onClose} className="p-1 text-white/40 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -112,16 +113,15 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
             </Avatar>
             <div>
               <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => fileRef.current?.click()}>
-                <Upload className="w-3.5 h-3.5" /> Upload Photo
+                <Upload className="w-3.5 h-3.5" /> {t("edit.uploadPhoto")}
               </Button>
-              <p className="text-xs text-white/40 mt-1">JPG, PNG — max 2MB</p>
+              <p className="text-xs text-white/40 mt-1">{t("edit.photoHint")}</p>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
             </div>
           </div>
 
-          {/* Avatar URL fallback */}
           <div className="space-y-1.5">
-            <Label htmlFor="avatar-url">Or paste image URL</Label>
+            <Label htmlFor="avatar-url">{t("edit.pasteUrl")}</Label>
             <Input
               id="avatar-url"
               placeholder="https://..."
@@ -133,9 +133,8 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
             />
           </div>
 
-          {/* Username */}
           <div className="space-y-1.5">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t("edit.username")}</Label>
             <Input
               id="username"
               value={form.username}
@@ -144,32 +143,32 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
             />
           </div>
 
-          {/* Bio */}
           <div className="space-y-1.5">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">{t("edit.bio")}</Label>
             <Textarea
               id="bio"
               rows={3}
-              placeholder="Tell agencies about yourself..."
+              placeholder={t("edit.bioPH")}
               value={form.bio}
               onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
             />
           </div>
 
-          {/* Country */}
           <div className="space-y-1.5">
-            <Label htmlFor="country">Country</Label>
-            <Input
+            <Label htmlFor="country">{t("edit.country")}</Label>
+            <select
               id="country"
-              placeholder="e.g. United States"
               value={form.country}
               onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
-            />
+              className="flex h-10 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              <option value="" className="bg-[#1a1a2e]">—</option>
+              {COUNTRIES.map((c) => <option key={c} value={c} className="bg-[#1a1a2e]">{c}</option>)}
+            </select>
           </div>
 
-          {/* Est. Income */}
           <div className="space-y-1.5">
-            <Label htmlFor="income">Estimated Monthly Income (USD)</Label>
+            <Label htmlFor="income">{t("edit.income")}</Label>
             <Input
               id="income"
               type="number"
@@ -179,7 +178,6 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
             />
           </div>
 
-          {/* Availability */}
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -190,12 +188,11 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
             >
               <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${form.isAvailable ? "translate-x-4" : "translate-x-0"}`} />
             </button>
-            <span className="text-sm text-white/70">Open to agency offers</span>
+            <span className="text-sm text-white/70">{t("edit.available")}</span>
           </div>
 
-          {/* Niche */}
           <div className="space-y-2">
-            <Label>Content Niche</Label>
+            <Label>{t("edit.niche")}</Label>
             <div className="flex flex-wrap gap-2">
               {NICHES.map((n) => (
                 <button
@@ -219,10 +216,10 @@ export default function EditProfileModal({ profile, onClose, onSaved }: Props) {
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="ghost" className="flex-1" onClick={onClose}>{t("edit.cancel")}</Button>
             <Button type="submit" variant="gradient" className="flex-1 gap-2" disabled={saving}>
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("edit.saving") : t("edit.save")}
             </Button>
           </div>
         </form>

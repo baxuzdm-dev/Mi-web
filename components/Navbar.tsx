@@ -6,9 +6,11 @@ import { useState } from "react";
 import { MessageSquare, LayoutDashboard, LogOut, Menu, X, Zap, Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useLang } from "@/contexts/LangContext";
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const { t, lang, setLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const role = session?.user?.role;
@@ -30,38 +32,42 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             <Button asChild variant="ghost" size="sm">
               <Link href="/explore/creators" className="gap-2 flex items-center">
-                <Search className="w-4 h-4" /> Creators
+                <Search className="w-4 h-4" /> {t("nav.creators")}
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link href="/explore/agencies" className="gap-2 flex items-center">
-                <Search className="w-4 h-4" /> Agencies
+                <Search className="w-4 h-4" /> {t("nav.agencies")}
               </Link>
             </Button>
           </div>
 
           {/* Right side */}
           <div className="flex items-center gap-1">
+            {/* Language toggle */}
+            <button
+              onClick={() => setLang(lang === "en" ? "es" : "en")}
+              className="hidden md:flex items-center px-2 py-1 rounded-md text-xs font-medium text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+              title={lang === "en" ? "Cambiar a Español" : "Switch to English"}
+            >
+              {lang === "en" ? "🇪🇸 ES" : "🇺🇸 EN"}
+            </button>
+
             {session ? (
               <>
-                {/* Messages */}
                 <Button asChild variant="ghost" size="icon" className="hidden md:flex">
-                  <Link href="/chat" aria-label="Messages">
+                  <Link href="/chat" aria-label={t("nav.messages")}>
                     <MessageSquare className="w-4 h-4" />
                   </Link>
                 </Button>
-
-                {/* Dashboard */}
                 <Button asChild variant="ghost" size="icon" className="hidden md:flex">
-                  <Link href={dashboardHref} aria-label="Dashboard">
+                  <Link href={dashboardHref} aria-label={t("nav.dashboard")}>
                     <LayoutDashboard className="w-4 h-4" />
                   </Link>
                 </Button>
-
-                {/* Avatar → profile page */}
                 <Link
                   href="/me"
-                  aria-label="My profile"
+                  aria-label={t("nav.myProfile")}
                   className="hidden md:flex items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   <Avatar className="w-8 h-8 hover:ring-2 hover:ring-violet-500 transition-all">
@@ -71,14 +77,12 @@ export default function Navbar() {
                     </AvatarFallback>
                   </Avatar>
                 </Link>
-
-                {/* Sign out */}
                 <Button
                   variant="ghost"
                   size="icon"
                   className="hidden md:flex text-white/50 hover:text-red-400"
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  aria-label="Sign out"
+                  aria-label={t("nav.signOut")}
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
@@ -86,15 +90,14 @@ export default function Navbar() {
             ) : (
               <div className="hidden md:flex items-center gap-2">
                 <Button asChild variant="ghost" size="sm">
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login">{t("nav.signIn")}</Link>
                 </Button>
                 <Button asChild variant="gradient" size="sm">
-                  <Link href="/register">Get started</Link>
+                  <Link href="/register">{t("nav.getStarted")}</Link>
                 </Button>
               </div>
             )}
 
-            {/* Mobile menu toggle */}
             <button
               className="md:hidden p-2 text-white/70 hover:text-white"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -110,24 +113,30 @@ export default function Navbar() {
         <div className="md:hidden border-t border-white/8 bg-[#0a0a0f]/95 px-4 py-4 space-y-2">
           <Button asChild variant="ghost" className="w-full justify-start gap-2">
             <Link href="/explore/creators" onClick={() => setMenuOpen(false)}>
-              <Search className="w-4 h-4" /> Explore Creators
+              <Search className="w-4 h-4" /> {t("nav.exploreCreators")}
             </Link>
           </Button>
           <Button asChild variant="ghost" className="w-full justify-start gap-2">
             <Link href="/explore/agencies" onClick={() => setMenuOpen(false)}>
-              <Search className="w-4 h-4" /> Explore Agencies
+              <Search className="w-4 h-4" /> {t("nav.exploreAgencies")}
             </Link>
           </Button>
+          <button
+            onClick={() => setLang(lang === "en" ? "es" : "en")}
+            className="w-full flex items-center gap-2 px-4 py-2 rounded-md text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            {lang === "en" ? "🇪🇸 Cambiar a Español" : "🇺🇸 Switch to English"}
+          </button>
           {session ? (
             <>
               <Button asChild variant="ghost" className="w-full justify-start gap-2">
                 <Link href="/chat" onClick={() => setMenuOpen(false)}>
-                  <MessageSquare className="w-4 h-4" /> Messages
+                  <MessageSquare className="w-4 h-4" /> {t("nav.messages")}
                 </Link>
               </Button>
               <Button asChild variant="ghost" className="w-full justify-start gap-2">
                 <Link href={dashboardHref} onClick={() => setMenuOpen(false)}>
-                  <LayoutDashboard className="w-4 h-4" /> Dashboard
+                  <LayoutDashboard className="w-4 h-4" /> {t("nav.dashboard")}
                 </Link>
               </Button>
               <Button asChild variant="ghost" className="w-full justify-start gap-2">
@@ -138,7 +147,7 @@ export default function Navbar() {
                       {session.user?.name?.[0]?.toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
-                  My Profile
+                  {t("nav.myProfile")}
                 </Link>
               </Button>
               <Button
@@ -146,16 +155,16 @@ export default function Navbar() {
                 className="w-full justify-start gap-2 text-red-400"
                 onClick={() => signOut({ callbackUrl: "/" })}
               >
-                <LogOut className="w-4 h-4" /> Sign out
+                <LogOut className="w-4 h-4" /> {t("nav.signOut")}
               </Button>
             </>
           ) : (
             <>
               <Button asChild variant="ghost" className="w-full">
-                <Link href="/login" onClick={() => setMenuOpen(false)}>Sign in</Link>
+                <Link href="/login" onClick={() => setMenuOpen(false)}>{t("nav.signIn")}</Link>
               </Button>
               <Button asChild variant="gradient" className="w-full">
-                <Link href="/register" onClick={() => setMenuOpen(false)}>Get started</Link>
+                <Link href="/register" onClick={() => setMenuOpen(false)}>{t("nav.getStarted")}</Link>
               </Button>
             </>
           )}

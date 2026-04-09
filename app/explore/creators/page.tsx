@@ -5,9 +5,10 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CreatorCard from "@/components/CreatorCard";
+import { useLang } from "@/contexts/LangContext";
+import { COUNTRIES } from "@/lib/countries";
 
 const NICHES = ["Fitness", "Lifestyle", "Gaming", "Beauty", "Travel", "Food", "Fashion", "Music", "Art", "Tech", "Cosplay"];
-const COUNTRIES = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Brazil", "Colombia", "Mexico"];
 
 interface Creator {
   id: string;
@@ -24,6 +25,7 @@ interface Creator {
 }
 
 export default function ExploreCreatorsPage() {
+  const { t } = useLang();
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -45,10 +47,7 @@ export default function ExploreCreatorsPage() {
     const timer = setTimeout(() => {
       fetch(`/api/creators?${params.toString()}`)
         .then((r) => r.json())
-        .then((data) => {
-          setCreators(data);
-          setLoading(false);
-        });
+        .then((data) => { setCreators(data); setLoading(false); });
     }, 300);
     return () => clearTimeout(timer);
   }, [search, selectedNiche, selectedCountry, minFollowers, verifiedOnly]);
@@ -62,20 +61,20 @@ export default function ExploreCreatorsPage() {
     setVerifiedOnly(false);
   }
 
+  const foundText = `${creators.length} ${creators.length === 1 ? "creator" : "creators"} found`;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Explore Creators</h1>
-        <p className="text-white/50">Discover talented content creators looking for management</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t("explore.creators")}</h1>
+        <p className="text-white/50">{t("explore.creatorsSub")}</p>
       </div>
 
-      {/* Search + Filter bar */}
       <div className="flex gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <Input
-            placeholder="Search by username or bio..."
+            placeholder={t("explore.search")}
             className="pl-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -87,27 +86,24 @@ export default function ExploreCreatorsPage() {
           onClick={() => setShowFilters(!showFilters)}
         >
           <SlidersHorizontal className="w-4 h-4" />
-          Filters
-          {hasFilters && (
-            <span className="w-2 h-2 rounded-full bg-violet-400" />
-          )}
+          {t("explore.filters")}
+          {hasFilters && <span className="w-2 h-2 rounded-full bg-violet-400" />}
         </Button>
       </div>
 
-      {/* Filters panel */}
       {showFilters && (
         <div className="p-5 rounded-2xl border border-white/10 bg-white/4 mb-6 space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-white">Filters</span>
+            <span className="text-sm font-medium text-white">{t("explore.filters")}</span>
             {hasFilters && (
               <button onClick={clearFilters} className="text-xs text-white/40 hover:text-white flex items-center gap-1">
-                <X className="w-3 h-3" /> Clear all
+                <X className="w-3 h-3" /> {t("explore.clearAll")}
               </button>
             )}
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-2 block">Niche</label>
+            <label className="text-xs text-white/50 mb-2 block">{t("explore.niche")}</label>
             <div className="flex flex-wrap gap-2">
               {NICHES.map((n) => (
                 <button
@@ -127,25 +123,25 @@ export default function ExploreCreatorsPage() {
 
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs text-white/50 mb-2 block">Country</label>
+              <label className="text-xs text-white/50 mb-2 block">{t("explore.country")}</label>
               <select
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
                 className="flex h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
-                <option value="" className="bg-[#1a1a2e]">All countries</option>
+                <option value="" className="bg-[#1a1a2e]">{t("explore.allCountries")}</option>
                 {COUNTRIES.map((c) => <option key={c} value={c} className="bg-[#1a1a2e]">{c}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="text-xs text-white/50 mb-2 block">Min. Followers</label>
+              <label className="text-xs text-white/50 mb-2 block">{t("explore.minFollowers")}</label>
               <select
                 value={minFollowers}
                 onChange={(e) => setMinFollowers(e.target.value)}
                 className="flex h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
-                <option value="" className="bg-[#1a1a2e]">Any</option>
+                <option value="" className="bg-[#1a1a2e]">{t("explore.any")}</option>
                 <option value="1000" className="bg-[#1a1a2e]">1K+</option>
                 <option value="10000" className="bg-[#1a1a2e]">10K+</option>
                 <option value="50000" className="bg-[#1a1a2e]">50K+</option>
@@ -155,7 +151,7 @@ export default function ExploreCreatorsPage() {
             </div>
 
             <div>
-              <label className="text-xs text-white/50 mb-2 block">Verification</label>
+              <label className="text-xs text-white/50 mb-2 block">{t("explore.verification")}</label>
               <button
                 onClick={() => setVerifiedOnly(!verifiedOnly)}
                 className={`flex h-9 w-full items-center justify-center rounded-lg border text-sm transition-all ${
@@ -164,19 +160,17 @@ export default function ExploreCreatorsPage() {
                     : "border-white/10 bg-white/5 text-white/50 hover:border-white/20"
                 }`}
               >
-                Verified only
+                {t("explore.verifiedOnly")}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Results count */}
       <div className="text-sm text-white/40 mb-4">
-        {loading ? "Loading..." : `${creators.length} creator${creators.length !== 1 ? "s" : ""} found`}
+        {loading ? t("explore.loading") : foundText}
       </div>
 
-      {/* Grid */}
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
@@ -186,8 +180,8 @@ export default function ExploreCreatorsPage() {
       ) : creators.length === 0 ? (
         <div className="text-center py-20">
           <Search className="w-12 h-12 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 text-lg">No creators found</p>
-          <p className="text-white/30 text-sm mt-1">Try adjusting your filters</p>
+          <p className="text-white/50 text-lg">{t("explore.notFound")}</p>
+          <p className="text-white/30 text-sm mt-1">{t("explore.adjustFilters")}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useLang } from "@/contexts/LangContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +41,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto sign in after registration
       await signIn("credentials", { email, password, redirect: false });
       router.push("/onboarding");
     } catch {
@@ -66,14 +67,14 @@ export default function RegisterPage() {
             </div>
             <span className="text-white">FanConnect</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-6 mb-2">Create your account</h1>
-          <p className="text-white/50">Join thousands of creators and agencies</p>
+          <h1 className="text-2xl font-bold text-white mt-6 mb-2">{t("register.title")}</h1>
+          <p className="text-white/50">{t("register.sub")}</p>
         </div>
 
         <div className="p-8 rounded-2xl border border-white/10 bg-white/4 backdrop-blur-sm">
           {/* Role Selection */}
           <div className="mb-6">
-            <Label className="block mb-3">I am a...</Label>
+            <Label className="block mb-3">{t("register.iAm")}</Label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -86,7 +87,7 @@ export default function RegisterPage() {
                 )}
               >
                 <Users className="w-6 h-6" />
-                <span className="text-sm font-medium">Content Creator</span>
+                <span className="text-sm font-medium">{t("register.creator")}</span>
               </button>
               <button
                 type="button"
@@ -99,7 +100,7 @@ export default function RegisterPage() {
                 )}
               >
                 <Building2 className="w-6 h-6" />
-                <span className="text-sm font-medium">Agency</span>
+                <span className="text-sm font-medium">{t("register.agency")}</span>
               </button>
             </div>
           </div>
@@ -111,7 +112,7 @@ export default function RegisterPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue with Google
+            {t("register.google")}
           </Button>
 
           <div className="relative my-6">
@@ -119,77 +120,48 @@ export default function RegisterPage() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-[#0f0f17] px-3 text-white/40">or with email</span>
+              <span className="bg-[#0f0f17] px-3 text-white/40">{t("register.orEmail")}</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
+              <Label htmlFor="name">{t("register.name")}</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  className="pl-9"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
+                <Input id="name" type="text" placeholder={t("register.namePH")} className="pl-9" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("register.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="pl-9"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Input id="email" type="email" placeholder="you@example.com" className="pl-9" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("register.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Min. 8 characters"
-                  className="pl-9"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={8}
-                  required
-                />
+                <Input id="password" type="password" placeholder={t("register.passwordPH")} className="pl-9" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} required />
               </div>
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                {error}
-              </div>
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
             )}
 
             <Button type="submit" variant="gradient" className="w-full gap-2" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? t("register.submitting") : t("register.submit")}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </form>
 
           <p className="text-center text-sm text-white/50 mt-6">
-            Already have an account?{" "}
-            <Link href="/login" className="text-violet-400 hover:text-violet-300">
-              Sign in
-            </Link>
+            {t("register.haveAccount")}{" "}
+            <Link href="/login" className="text-violet-400 hover:text-violet-300">{t("register.signIn")}</Link>
           </p>
         </div>
       </div>
