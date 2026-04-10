@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useApp } from "@/contexts/AppContext";
 import {
   Zap,
   Home,
@@ -196,12 +197,24 @@ const MOCK_TRANSACTIONS = [
 // ─── Tab: Perfil ──────────────────────────────────────────────────────────────
 
 function TabPerfil() {
-  const [selectedNiches, setSelectedNiches] = useState<string[]>(["Lifestyle", "Travel"]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["Instagram", "TikTok"]);
+  const { state, updateProfile } = useApp();
+  const MAX_BIO = 500;
+
+  const [bio, setBio] = useState(state.profile.bio ?? "Creadora de contenido lifestyle y viajes. Comparto mi vida entre México y el mundo 🌎✈️");
+  const [country, setCountry] = useState(state.profile.country ?? "México");
+  const [selectedNiches, setSelectedNiches] = useState<string[]>(state.profile.niche ?? ["Lifestyle", "Travel"]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(state.profile.platforms ?? ["Instagram", "TikTok"]);
+  const [saved, setSaved] = useState(false);
 
   function toggleItem(list: string[], setList: (v: string[]) => void, item: string) {
     if (list.includes(item)) setList(list.filter((i) => i !== item));
     else setList([...list, item]);
+  }
+
+  function handleSave() {
+    updateProfile({ bio, country, niche: selectedNiches, platforms: selectedPlatforms });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
   }
 
   return (
@@ -233,19 +246,22 @@ function TabPerfil() {
           <label className="block text-sm font-medium text-white/70">Bio</label>
           <textarea
             rows={3}
-            defaultValue="Creadora de contenido lifestyle y viajes. Comparto mi vida entre México y el mundo 🌎✈️"
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, MAX_BIO))}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors resize-none"
           />
-          <p className="text-xs text-white/30 text-right">120 caracteres restantes</p>
+          <p className="text-xs text-white/30 text-right">{MAX_BIO - bio.length} caracteres restantes</p>
         </div>
 
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-white/70">País</label>
-          <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500 transition-colors cursor-pointer">
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500 transition-colors cursor-pointer"
+          >
             {COUNTRIES.map((c) => (
-              <option key={c} value={c} className="bg-[#0d0d14]" selected={c === "México"}>
-                {c}
-              </option>
+              <option key={c} value={c} className="bg-[#0d0d14]">{c}</option>
             ))}
           </select>
         </div>
@@ -300,8 +316,16 @@ function TabPerfil() {
       </div>
 
       {/* Save */}
-      <button className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors">
-        Guardar cambios
+      <button
+        onClick={handleSave}
+        className={`flex items-center gap-2 text-sm font-semibold px-6 py-2.5 rounded-xl transition-all ${
+          saved
+            ? "bg-emerald-600 text-white"
+            : "bg-violet-600 hover:bg-violet-500 text-white"
+        }`}
+      >
+        {saved && <Check size={14} />}
+        {saved ? "¡Guardado!" : "Guardar cambios"}
       </button>
     </div>
   );

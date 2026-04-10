@@ -1,9 +1,101 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Shield, CalendarDays, Users, DollarSign, CheckCircle2, ExternalLink } from "lucide-react";
+import { Search, Shield, CalendarDays, Users, DollarSign, CheckCircle2, ExternalLink, X } from "lucide-react";
 import Link from "next/link";
 import { mockCampaigns, mockBrands, type MockCampaign } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
+
+// ─── Apply Modal ──────────────────────────────────────────────────────────────
+
+function ApplyModal({ campaign, onClose }: { campaign: MockCampaign; onClose: () => void }) {
+  const { applyToCampaign } = useApp();
+  const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit() {
+    if (!message.trim()) return;
+    applyToCampaign(campaign.id, message, {
+      name: "Sofia Ramírez",
+      username: "sofiaramirez",
+      followers: 284000,
+    });
+    setSubmitted(true);
+    setTimeout(onClose, 1800);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-lg bg-[#12121c] border border-white/10 rounded-2xl p-6 space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-white font-bold text-lg">Aplicar a campaña</h3>
+            <p className="text-white/50 text-sm mt-0.5">{campaign.title}</p>
+          </div>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors mt-0.5">
+            <X size={20} />
+          </button>
+        </div>
+
+        {submitted ? (
+          <div className="flex flex-col items-center py-8 gap-3">
+            <div className="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center">
+              <CheckCircle2 size={28} className="text-emerald-400" />
+            </div>
+            <p className="text-white font-semibold">¡Aplicación enviada!</p>
+            <p className="text-white/50 text-sm text-center">Te notificaremos cuando la marca revise tu propuesta.</p>
+          </div>
+        ) : (
+          <>
+            {/* Campaign summary */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Marca</span>
+                <span className="text-white font-medium">{campaign.brandName}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Pago por creador</span>
+                <span className="text-emerald-400 font-semibold">${campaign.budgetPerCreator.toLocaleString("es-MX")}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/50">Plataformas</span>
+                <span className="text-white/70">{campaign.platforms.join(", ")}</span>
+              </div>
+            </div>
+
+            {/* Message */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-white/70">
+                ¿Por qué eres el creador ideal para esta campaña?
+              </label>
+              <textarea
+                rows={4}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Describe tu audiencia, estilo de contenido y por qué encajas con la campaña..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors resize-none"
+              />
+              <p className="text-xs text-white/30 text-right">{message.length}/500</p>
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={!message.trim()}
+              className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm py-3 rounded-xl transition-all"
+            >
+              Enviar aplicación
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -73,8 +165,9 @@ function PlatformPill({ platform }: { platform: string }) {
 
 // ─── Campaign Card ────────────────────────────────────────────────────────────
 
-function CampaignCard({ campaign }: { campaign: MockCampaign }) {
-  const [applied, setApplied] = useState(false);
+function CampaignCard({ campaign, onApplyClick }: { campaign: MockCampaign; onApplyClick: () => void }) {
+  const { hasApplied } = useApp();
+  const applied = hasApplied(campaign.id);
   const days = daysUntil(campaign.deadline);
   const progress = Math.min(100, Math.round((campaign.creatorsApplied / campaign.creatorsNeeded) * 100));
   const brandUsername = mockBrands.find((b) => b.id === campaign.brandId)?.username ?? null;
@@ -197,7 +290,7 @@ function CampaignCard({ campaign }: { campaign: MockCampaign }) {
           </div>
         ) : (
           <button
-            onClick={() => setApplied(true)}
+            onClick={onApplyClick}
             className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm py-3 rounded-xl transition-all"
           >
             Aplicar a esta campaña
@@ -269,6 +362,7 @@ export default function CampaignsPage() {
   const [platform, setPlatform] = useState("Todas");
   const [budgetIdx, setBudgetIdx] = useState(0);
   const [niche, setNiche] = useState("Todos los nichos");
+  const [applyingTo, setApplyingTo] = useState<MockCampaign | null>(null);
 
   const displayedCampaigns = useMemo(() => {
     let result = [...mockCampaigns];
@@ -403,10 +497,13 @@ export default function CampaignsPage() {
         </div>
 
         {/* ── Campaign Grid ── */}
+        {applyingTo && (
+          <ApplyModal campaign={applyingTo} onClose={() => setApplyingTo(null)} />
+        )}
         {displayedCampaigns.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {displayedCampaigns.map((campaign) => (
-              <CampaignCard key={campaign.id} campaign={campaign} />
+              <CampaignCard key={campaign.id} campaign={campaign} onApplyClick={() => setApplyingTo(campaign)} />
             ))}
           </div>
         ) : (
