@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight, Zap, ShieldCheck, MessageSquare, TrendingUp,
-  Star, Users, Building2, CheckCircle2, ChevronDown, Check,
+  Star, Users, Building2, CheckCircle2, ChevronDown, Check, ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { useLang } from "@/contexts/LangContext";
 const stats = [
   { labelKey: "landing.stats.creators", value: "12,000+" },
   { labelKey: "landing.stats.agencies", value: "340+" },
+  { label: "Marcas activas", value: "2,500+" },
   { labelKey: "landing.stats.matches", value: "8,500+" },
   { labelKey: "landing.stats.revenue", value: "$42M+" },
 ];
@@ -49,6 +50,17 @@ const agencyPartners = [
   "Pinnacle Talent",
   "CreatorX",
   "MediaForge Agency",
+];
+
+const brandPartners = [
+  { name: "Adidas", color: "from-black/60 to-white/10" },
+  { name: "L'Oréal", color: "from-rose-900/60 to-rose-700/40" },
+  { name: "Samsung", color: "from-blue-900/60 to-blue-700/40" },
+  { name: "Red Bull", color: "from-red-900/60 to-orange-700/40" },
+  { name: "Spotify", color: "from-emerald-900/60 to-emerald-700/40" },
+  { name: "Zara", color: "from-zinc-800/60 to-zinc-600/40" },
+  { name: "Netflix", color: "from-red-900/60 to-black/60" },
+  { name: "Nike", color: "from-orange-900/60 to-orange-700/40" },
 ];
 
 const pricingPlans = [
@@ -231,12 +243,12 @@ export default function LandingPage() {
         </div>
 
         {/* Stats bar */}
-        <div className="max-w-4xl mx-auto mt-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/8 rounded-2xl overflow-hidden border border-white/8">
-            {stats.map((stat) => (
-              <div key={stat.labelKey} className="bg-[#0a0a0f] p-6 text-center">
+        <div className="max-w-5xl mx-auto mt-20">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/8 rounded-2xl overflow-hidden border border-white/8">
+            {stats.map((stat, i) => (
+              <div key={i} className="bg-[#0a0a0f] p-6 text-center">
                 <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-sm text-white/50">{t(stat.labelKey)}</div>
+                <div className="text-sm text-white/50">{"label" in stat ? stat.label : t(stat.labelKey!)}</div>
               </div>
             ))}
           </div>
@@ -252,49 +264,77 @@ export default function LandingPage() {
             <p className="text-white/50 text-lg max-w-xl mx-auto">{t("landing.howItWorksSub2")}</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-3 gap-8 items-start">
             {/* For Creators */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-8">
+            <div className="space-y-5 p-6 rounded-2xl border border-white/8 bg-white/3">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
                   <Users className="w-5 h-5 text-violet-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">{t("landing.forCreators")}</h3>
+                <h3 className="text-lg font-semibold text-white">{t("landing.forCreators")}</h3>
               </div>
               {(["landing.creatorStep1","landing.creatorStep2","landing.creatorStep3","landing.creatorStep4"] as const).map((key, i) => (
-                <div key={key} className="flex items-start gap-4">
-                  <div className="w-7 h-7 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center shrink-0 text-violet-400 text-sm font-bold">
+                <div key={key} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center shrink-0 text-violet-400 text-xs font-bold mt-0.5">
                     {i + 1}
                   </div>
-                  <p className="text-white/70 pt-0.5">{t(key)}</p>
+                  <p className="text-white/70 text-sm leading-relaxed">{t(key)}</p>
                 </div>
               ))}
               <Link href="/register?role=creator">
-                <Button variant="gradient" className="mt-4 gap-2">
+                <Button variant="gradient" size="sm" className="mt-2 gap-2 w-full">
                   {t("landing.joinCreator")} <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
 
             {/* For Agencies */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-8">
+            <div className="space-y-5 p-6 rounded-2xl border border-pink-500/20 bg-pink-500/5">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-pink-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">{t("landing.forAgencies")}</h3>
+                <h3 className="text-lg font-semibold text-white">{t("landing.forAgencies")}</h3>
               </div>
               {(["landing.agencyStep1","landing.agencyStep2","landing.agencyStep3","landing.agencyStep4"] as const).map((key, i) => (
-                <div key={key} className="flex items-start gap-4">
-                  <div className="w-7 h-7 rounded-full bg-pink-600/20 border border-pink-500/30 flex items-center justify-center shrink-0 text-pink-400 text-sm font-bold">
+                <div key={key} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-pink-600/20 border border-pink-500/30 flex items-center justify-center shrink-0 text-pink-400 text-xs font-bold mt-0.5">
                     {i + 1}
                   </div>
-                  <p className="text-white/70 pt-0.5">{t(key)}</p>
+                  <p className="text-white/70 text-sm leading-relaxed">{t(key)}</p>
                 </div>
               ))}
               <Link href="/register?role=agency">
-                <Button variant="outline" className="mt-4 gap-2 border-pink-500/30 hover:bg-pink-500/10 text-pink-300">
+                <Button variant="outline" size="sm" className="mt-2 gap-2 w-full border-pink-500/30 hover:bg-pink-500/10 text-pink-300">
                   {t("landing.joinAgency")} <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* For Brands */}
+            <div className="space-y-5 p-6 rounded-2xl border border-orange-500/20 bg-orange-500/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 text-orange-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Para Marcas</h3>
+              </div>
+              {[
+                "Crea el perfil de tu marca y publica campañas en minutos",
+                "Accede a +12,000 creadores filtrados por nicho, alcance y precio",
+                "Gestiona propuestas, contratos y pagos en un solo lugar",
+                "Analiza el rendimiento de cada campaña con métricas en tiempo real",
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-orange-600/20 border border-orange-500/30 flex items-center justify-center shrink-0 text-orange-400 text-xs font-bold mt-0.5">
+                    {i + 1}
+                  </div>
+                  <p className="text-white/70 text-sm leading-relaxed">{step}</p>
+                </div>
+              ))}
+              <Link href="/register?role=brand">
+                <Button variant="outline" size="sm" className="mt-2 gap-2 w-full border-orange-500/30 hover:bg-orange-500/10 text-orange-300">
+                  Registrar mi marca <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -400,7 +440,49 @@ export default function LandingPage() {
           .animate-marquee {
             animation: marquee 28s linear infinite;
           }
+          .animate-marquee-slow {
+            animation: marquee 40s linear infinite;
+          }
         `}</style>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          BRANDS MARQUEE — Marcas que publican campañas
+      ══════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-4 border-t border-white/8 overflow-hidden">
+        <div className="max-w-6xl mx-auto mb-8 text-center">
+          <p className="text-white/40 text-sm uppercase tracking-widest font-medium">
+            Marcas que publican campañas
+          </p>
+        </div>
+        <div className="relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+          <div className="flex gap-4 shrink-0 animate-marquee-slow">
+            {[...brandPartners, ...brandPartners].map((brand, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/10 bg-white/5 shrink-0 select-none"
+              >
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brand.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                  {brand.name.charAt(0)}
+                </div>
+                <span className="text-white/80 text-sm font-semibold whitespace-nowrap">{brand.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-4 shrink-0 animate-marquee-slow" aria-hidden>
+            {[...brandPartners, ...brandPartners].map((brand, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-5 py-3 rounded-xl border border-white/10 bg-white/5 shrink-0 select-none"
+              >
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${brand.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                  {brand.name.charAt(0)}
+                </div>
+                <span className="text-white/80 text-sm font-semibold whitespace-nowrap">{brand.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════

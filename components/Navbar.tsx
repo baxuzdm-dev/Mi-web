@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
-import { MessageSquare, LayoutDashboard, LogOut, Menu, X, Zap, Search } from "lucide-react";
+import { MessageSquare, LayoutDashboard, LogOut, Menu, X, Zap, Search, ShoppingBag, Megaphone } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useLang } from "@/contexts/LangContext";
@@ -14,7 +14,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const role = session?.user?.role;
-  const dashboardHref = role === "CREATOR" ? "/creator" : role === "AGENCY" ? "/agency" : "/onboarding";
+  const dashboardHref = role === "CREATOR" ? "/creator" : role === "AGENCY" ? "/agency" : role === "BRAND" ? "/dashboard" : "/onboarding";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/8 bg-[#0a0a0f]/80 backdrop-blur-xl">
@@ -38,6 +38,16 @@ export default function Navbar() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/explore/agencies" className="gap-2 flex items-center">
                 <Search className="w-4 h-4" /> {t("nav.agencies")}
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/marketplace" className="gap-2 flex items-center">
+                <ShoppingBag className="w-4 h-4" /> Marketplace
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/campaigns" className="gap-2 flex items-center">
+                <Megaphone className="w-4 h-4" /> Campañas
               </Link>
             </Button>
           </div>
@@ -119,6 +129,16 @@ export default function Navbar() {
           <Button asChild variant="ghost" className="w-full justify-start gap-2">
             <Link href="/explore/agencies" onClick={() => setMenuOpen(false)}>
               <Search className="w-4 h-4" /> {t("nav.exploreAgencies")}
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link href="/marketplace" onClick={() => setMenuOpen(false)}>
+              <ShoppingBag className="w-4 h-4" /> Marketplace
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link href="/campaigns" onClick={() => setMenuOpen(false)}>
+              <Megaphone className="w-4 h-4" /> Campañas
             </Link>
           </Button>
           <button
