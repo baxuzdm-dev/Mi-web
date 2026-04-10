@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useApp } from "@/contexts/AppContext";
+import { mockCreators } from "@/lib/mockData";
 import {
   Zap,
   Home,
@@ -200,10 +201,24 @@ function TabPerfil() {
   const { state, updateProfile } = useApp();
   const MAX_BIO = 500;
 
-  const [bio, setBio] = useState(state.profile.bio ?? "Creadora de contenido lifestyle y viajes. Comparto mi vida entre México y el mundo 🌎✈️");
-  const [country, setCountry] = useState(state.profile.country ?? "México");
-  const [selectedNiches, setSelectedNiches] = useState<string[]>(state.profile.niche ?? ["Lifestyle", "Travel"]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(state.profile.platforms ?? ["Instagram", "TikTok"]);
+  const demoCreator = mockCreators.find((c) => c.username === "sofiaramirez");
+
+  const [displayName, setDisplayName] = useState(
+    state.profile.displayName ?? demoCreator?.user.name ?? "Sofia Ramírez"
+  );
+  const [bio, setBio] = useState(
+    state.profile.bio ?? demoCreator?.bio ?? ""
+  );
+  const [country, setCountry] = useState(
+    state.profile.country ?? demoCreator?.country ?? "México"
+  );
+  const [website, setWebsite] = useState(state.profile.website ?? "");
+  const [selectedNiches, setSelectedNiches] = useState<string[]>(
+    state.profile.niche ?? demoCreator?.niche ?? ["Lifestyle", "Travel"]
+  );
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(
+    state.profile.platforms ?? demoCreator?.platforms ?? ["Instagram", "TikTok"]
+  );
   const [saved, setSaved] = useState(false);
 
   function toggleItem(list: string[], setList: (v: string[]) => void, item: string) {
@@ -212,13 +227,21 @@ function TabPerfil() {
   }
 
   function handleSave() {
-    updateProfile({ bio, country, niche: selectedNiches, platforms: selectedPlatforms });
+    updateProfile({ displayName, bio, country, website, niche: selectedNiches, platforms: selectedPlatforms });
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
     <div className="space-y-8">
+      {/* Success toast */}
+      {saved && (
+        <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-medium px-4 py-3 rounded-xl">
+          <Check size={16} />
+          ¡Perfil actualizado!
+        </div>
+      )}
+
       {/* Avatar */}
       <div className="flex items-center gap-5">
         <div className="relative">
@@ -230,7 +253,7 @@ function TabPerfil() {
           </button>
         </div>
         <div>
-          <p className="text-sm font-medium text-white">Sofia Ramírez</p>
+          <p className="text-sm font-medium text-white">{displayName}</p>
           <p className="text-xs text-white/40 mt-0.5">@sofiaramirez</p>
           <button className="mt-2 text-xs text-violet-400 hover:text-violet-300 transition-colors">
             Cambiar foto
@@ -240,8 +263,29 @@ function TabPerfil() {
 
       {/* Fields */}
       <div className="space-y-5">
-        <Field label="Nombre de usuario" defaultValue="sofiaramirez" />
+        {/* Display name */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-white/70">Nombre visible</label>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors"
+          />
+        </div>
 
+        {/* Username (read-only) */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-white/70">Nombre de usuario</label>
+          <input
+            type="text"
+            value="sofiaramirez"
+            readOnly
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white opacity-60 cursor-not-allowed outline-none"
+          />
+        </div>
+
+        {/* Bio */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-white/70">Bio</label>
           <textarea
@@ -250,9 +294,24 @@ function TabPerfil() {
             onChange={(e) => setBio(e.target.value.slice(0, MAX_BIO))}
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors resize-none"
           />
-          <p className="text-xs text-white/30 text-right">{MAX_BIO - bio.length} caracteres restantes</p>
+          <p className={`text-xs text-right ${MAX_BIO - bio.length < 40 ? "text-orange-400" : "text-white/30"}`}>
+            {MAX_BIO - bio.length} caracteres restantes
+          </p>
         </div>
 
+        {/* Website */}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-white/70">Sitio web</label>
+          <input
+            type="url"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            placeholder="https://tuwebsite.com"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors"
+          />
+        </div>
+
+        {/* Country */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-white/70">País</label>
           <select
@@ -318,14 +377,9 @@ function TabPerfil() {
       {/* Save */}
       <button
         onClick={handleSave}
-        className={`flex items-center gap-2 text-sm font-semibold px-6 py-2.5 rounded-xl transition-all ${
-          saved
-            ? "bg-emerald-600 text-white"
-            : "bg-violet-600 hover:bg-violet-500 text-white"
-        }`}
+        className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
       >
-        {saved && <Check size={14} />}
-        {saved ? "¡Guardado!" : "Guardar cambios"}
+        Guardar cambios
       </button>
     </div>
   );
@@ -334,6 +388,24 @@ function TabPerfil() {
 // ─── Tab: Cuenta ──────────────────────────────────────────────────────────────
 
 function TabCuenta() {
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState(false);
+
+  function handlePasswordChange() {
+    setPwError("");
+    setPwSuccess(false);
+    if (!currentPw) { setPwError("Ingresa tu contraseña actual."); return; }
+    if (newPw.length < 8) { setPwError("La nueva contraseña debe tener al menos 8 caracteres."); return; }
+    if (newPw !== confirmPw) { setPwError("Las contraseñas no coinciden."); return; }
+    // Demo: simulate success
+    setPwSuccess(true);
+    setCurrentPw(""); setNewPw(""); setConfirmPw("");
+    setTimeout(() => setPwSuccess(false), 2000);
+  }
+
   return (
     <div className="space-y-8">
       {/* Email */}
@@ -352,10 +424,56 @@ function TabCuenta() {
       <div className="pt-4 border-t border-white/5">
         <h3 className="text-sm font-semibold text-white mb-4">Cambiar contraseña</h3>
         <div className="space-y-4">
-          <Field label="Contraseña actual" type="password" placeholder="••••••••" />
-          <Field label="Nueva contraseña" type="password" placeholder="••••••••" />
-          <Field label="Confirmar nueva contraseña" type="password" placeholder="••••••••" />
-          <button className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors">
+          {pwSuccess && (
+            <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-medium px-4 py-3 rounded-xl">
+              <Check size={16} />
+              ¡Contraseña actualizada correctamente!
+            </div>
+          )}
+          {pwError && (
+            <div className="bg-red-500/15 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl">
+              {pwError}
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-white/70">Contraseña actual</label>
+            <input
+              type="password"
+              value={currentPw}
+              onChange={(e) => setCurrentPw(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-white/70">Nueva contraseña</label>
+            <input
+              type="password"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-white/70">Confirmar nueva contraseña</label>
+            <input
+              type="password"
+              value={confirmPw}
+              onChange={(e) => setConfirmPw(e.target.value)}
+              placeholder="••••••••"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors ${
+                confirmPw && newPw !== confirmPw ? "border-red-500/50" : "border-white/10"
+              }`}
+            />
+            {confirmPw && newPw !== confirmPw && (
+              <p className="text-xs text-red-400">Las contraseñas no coinciden</p>
+            )}
+          </div>
+          <button
+            onClick={handlePasswordChange}
+            className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+          >
             Actualizar contraseña
           </button>
         </div>
@@ -405,10 +523,36 @@ const NOTIF_TOGGLES = [
   { id: "system",      label: "Sistema",                    description: "Actualizaciones de la plataforma y avisos importantes." },
 ];
 
+const NOTIF_STORAGE_KEY = "mc_notif_prefs";
+
 function TabNotificaciones() {
   const [toggles, setToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(NOTIF_TOGGLES.map((t) => [t.id, true]))
   );
+  const [saved, setSaved] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, boolean>;
+        setToggles((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  function handleToggle(id: string, value: boolean) {
+    const next = { ...toggles, [id]: value };
+    setToggles(next);
+    try { localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  }
+
+  function handleSave() {
+    try { localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(toggles)); } catch { /* ignore */ }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
 
   return (
     <div className="space-y-6">
@@ -417,6 +561,13 @@ function TabNotificaciones() {
         <p className="text-xs text-white/40">Elige qué notificaciones quieres recibir en la plataforma.</p>
       </div>
 
+      {saved && (
+        <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-medium px-4 py-3 rounded-xl">
+          <Check size={16} />
+          ¡Preferencias guardadas!
+        </div>
+      )}
+
       <div className="bg-white/5 border border-white/10 rounded-2xl px-5 divide-y divide-white/5">
         {NOTIF_TOGGLES.map((t) => (
           <ToggleRow
@@ -424,12 +575,15 @@ function TabNotificaciones() {
             label={t.label}
             description={t.description}
             enabled={toggles[t.id]}
-            onChange={(v) => setToggles((prev) => ({ ...prev, [t.id]: v }))}
+            onChange={(v) => handleToggle(t.id, v)}
           />
         ))}
       </div>
 
-      <button className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors">
+      <button
+        onClick={handleSave}
+        className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+      >
         Guardar preferencias
       </button>
     </div>

@@ -8,90 +8,118 @@ import { useApp } from "@/contexts/AppContext";
 
 // ─── Apply Modal ──────────────────────────────────────────────────────────────
 
+const APPLY_MIN_CHARS = 50;
+
 function ApplyModal({ campaign, onClose }: { campaign: MockCampaign; onClose: () => void }) {
   const { applyToCampaign } = useApp();
   const [message, setMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+
+  const isValid = message.length >= APPLY_MIN_CHARS;
+  const remaining = APPLY_MIN_CHARS - message.length;
 
   function handleSubmit() {
-    if (!message.trim()) return;
+    if (!isValid) return;
     applyToCampaign(campaign.id, message, {
-      name: "Sofia Ramírez",
+      name: "Demo Creator",
       username: "sofiaramirez",
-      followers: 284000,
+      followers: 850000,
     });
-    setSubmitted(true);
-    setTimeout(onClose, 1800);
+    onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-lg bg-[#12121c] border border-white/10 rounded-2xl p-6 space-y-5"
+        className="w-full max-w-lg bg-[#0d0d18] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3 p-6 border-b border-white/10">
           <div>
             <h3 className="text-white font-bold text-lg">Aplicar a campaña</h3>
-            <p className="text-white/50 text-sm mt-0.5">{campaign.title}</p>
+            <p className="text-white/50 text-sm mt-0.5">
+              {campaign.title} · <span className="text-violet-300">{campaign.brandName}</span>
+            </p>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors mt-0.5">
-            <X size={20} />
+          <button
+            onClick={onClose}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+          >
+            <X size={16} />
           </button>
         </div>
 
-        {submitted ? (
-          <div className="flex flex-col items-center py-8 gap-3">
-            <div className="w-14 h-14 bg-emerald-500/20 rounded-full flex items-center justify-center">
-              <CheckCircle2 size={28} className="text-emerald-400" />
+        <div className="p-6 space-y-5">
+          {/* Your stats */}
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Tu perfil</p>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                SR
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Sofia Ramírez</p>
+                <p className="text-xs text-white/40">@sofiaramirez</p>
+              </div>
             </div>
-            <p className="text-white font-semibold">¡Aplicación enviada!</p>
-            <p className="text-white/50 text-sm text-center">Te notificaremos cuando la marca revise tu propuesta.</p>
+            <div className="flex flex-wrap gap-3 text-xs text-white/60">
+              <span>
+                <span className="text-white font-semibold">850K</span> seguidores
+              </span>
+              <span className="text-white/30">·</span>
+              <span>Instagram · TikTok</span>
+            </div>
           </div>
-        ) : (
-          <>
-            {/* Campaign summary */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-white/50">Marca</span>
-                <span className="text-white font-medium">{campaign.brandName}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-white/50">Pago por creador</span>
-                <span className="text-emerald-400 font-semibold">${campaign.budgetPerCreator.toLocaleString("es-MX")}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-white/50">Plataformas</span>
-                <span className="text-white/70">{campaign.platforms.join(", ")}</span>
-              </div>
-            </div>
 
-            {/* Message */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-white/70">
-                ¿Por qué eres el creador ideal para esta campaña?
-              </label>
-              <textarea
-                rows={4}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Describe tu audiencia, estilo de contenido y por qué encajas con la campaña..."
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500 transition-colors resize-none"
-              />
-              <p className="text-xs text-white/30 text-right">{message.length}/500</p>
+          {/* Message */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white/70">
+              ¿Por qué eres el creador ideal para esta campaña?
+            </label>
+            <textarea
+              rows={5}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Describe tu audiencia, estilo de contenido y por qué encajas con esta campaña..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-violet-500 transition-colors resize-none"
+            />
+            <div className="flex items-center justify-between">
+              {remaining > 0 ? (
+                <p className="text-xs text-white/40">
+                  Mínimo {APPLY_MIN_CHARS} caracteres · faltan{" "}
+                  <span className="text-orange-400 font-medium">{remaining}</span>
+                </p>
+              ) : (
+                <p className="text-xs text-emerald-400">Mensaje listo</p>
+              )}
+              <span className="text-xs text-white/30">{message.length} car.</span>
             </div>
+          </div>
+        </div>
 
-            {/* Submit */}
-            <button
-              onClick={handleSubmit}
-              disabled={!message.trim()}
-              className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm py-3 rounded-xl transition-all"
-            >
-              Enviar aplicación
-            </button>
-          </>
-        )}
+        {/* Footer */}
+        <div className="flex gap-3 px-6 pb-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 text-sm font-semibold border border-white/15 text-white/60 hover:bg-white/5 hover:text-white rounded-xl transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!isValid}
+            className={`flex-1 py-3 text-sm font-semibold rounded-xl transition-all ${
+              isValid
+                ? "bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+                : "bg-white/5 text-white/30 cursor-not-allowed border border-white/10"
+            }`}
+          >
+            Enviar aplicación
+          </button>
+        </div>
       </div>
     </div>
   );
