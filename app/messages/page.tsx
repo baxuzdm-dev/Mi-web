@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   MessageSquare,
   Pencil,
@@ -11,7 +11,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import Link from "next/link";
-import { mockConversations, MockConversation } from "@/lib/mockData";
+import { mockConversations, MockConversation, MockMessage } from "@/lib/mockData";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 
@@ -50,12 +50,35 @@ type Tab = "Todo" | "No leído" | "Propuestas";
 
 /* ═══════════════════════════════════════════════════════════════ */
 export default function MessagesPage() {
-  const [activeConv, setActiveConv] = useState<MockConversation>(mockConversations[0]);
+  // Mutable copy of conversations so we can append messages
+  const [conversations, setConversations] = useState<MockConversation[]>(
+    () => mockConversations.map((c) => ({ ...c, messages: [...c.messages] }))
+  );
+
+  const [activeConvId, setActiveConvId] = useState<string>(conversations[0]?.id ?? "");
   const [tab, setTab] = useState<Tab>("Todo");
   const [search, setSearch] = useState("");
   const [inputText, setInputText] = useState("");
 
-  const filtered = mockConversations.filter((c) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
+
+  // Auto-scroll to bottom when active conversation or its messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeConvId, activeConv?.messages.length]);
+
+  // Mark as read when opening a conversation
+  useEffect(() => {
+    if (!activeConvId) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConvId ? { ...c, unreadCount: 0 } : c))
+    );
+  }, [activeConvId]);
+
+  const filtered = conversations.filter((c) => {
     if (search) {
       const q = search.toLowerCase();
       if (
@@ -66,13 +89,36 @@ export default function MessagesPage() {
         return false;
     }
     if (tab === "No leído") return c.unreadCount > 0;
-    if (tab === "Propuestas") return c.id === "conv-002"; // simulate
+    if (tab === "Propuestas") return c.id === "conv-002";
     return true;
   });
 
   const handleSend = () => {
-    if (!inputText.trim()) return;
+    const text = inputText.trim();
+    if (!text || !activeConvId) return;
+
+    const newMsg: MockMessage = {
+      id: `msg-${Date.now()}`,
+      content: text,
+      senderId: "creator-001",
+      createdAt: new Date().toISOString(),
+    };
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === activeConvId
+          ? {
+              ...c,
+              messages: [...c.messages, newMsg],
+              lastMessage: text,
+              lastMessageAt: newMsg.createdAt,
+            }
+          : c
+      )
+    );
+
     setInputText("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -126,12 +172,12 @@ export default function MessagesPage() {
             </div>
           ) : (
             filtered.map((conv, idx) => {
-              const isActive = activeConv?.id === conv.id;
+              const isActive = activeConvId === conv.id;
               const isProposal = conv.id === "conv-002";
               return (
                 <button
                   key={conv.id}
-                  onClick={() => setActiveConv(conv)}
+                  onClick={() => setActiveConvId(conv.id)}
                   className={`w-full text-left p-3 flex gap-3 transition-all border-r-2 ${
                     isActive
                       ? "bg-violet-600/10 border-r-violet-500"
@@ -248,6 +294,8 @@ export default function MessagesPage() {
                   </div>
                 );
               })}
+              {/* Scroll anchor */}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input area */}
@@ -257,6 +305,7 @@ export default function MessagesPage() {
                   <Smile size={18} />
                 </button>
                 <input
+                  ref={inputRef}
                   type="text"
                   placeholder="Escribe un mensaje..."
                   value={inputText}
