@@ -6,15 +6,8 @@ import {
   ShieldCheck,
   Star,
   ArrowLeft,
-  Instagram,
-  Youtube,
-  ExternalLink,
-  Package,
   Clock,
-  Globe,
   Users,
-  TrendingUp,
-  LayoutGrid,
 } from "lucide-react";
 import Link from "next/link";
 import { mockCreators, mockServices } from "@/lib/mockData";

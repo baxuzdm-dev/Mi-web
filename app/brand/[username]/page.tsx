@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
   ShieldCheck,
@@ -13,7 +12,6 @@ import {
   Users,
   Megaphone,
   Clock,
-  TrendingUp,
   Zap,
 } from "lucide-react";
 import Link from "next/link";

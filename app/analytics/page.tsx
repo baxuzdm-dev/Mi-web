@@ -17,10 +17,22 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
-  Users,
   DollarSign,
+  type LucideIcon,
 } from "lucide-react";
 import { mockAnalytics } from "@/lib/mockData";
+
+// ─── Runtime shape of analytics data (second declaration in mockData wins) ────
+type AnalyticsRuntime = {
+  profileViews: number[];
+  searchAppearances: number[];
+  messages: number[];
+  deals: number[];
+  revenueByService: { name: string; value: number }[];
+  topCountries: { country: string; visits: number }[];
+  weekLabels: string[];
+  monthLabels: string[];
+};
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -179,7 +191,7 @@ interface StatCardProps {
   value: string;
   change: string;
   positive: boolean;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
 }
 
 function StatCard({ label, value, change, positive, icon: Icon }: StatCardProps) {
@@ -207,7 +219,7 @@ function StatCard({ label, value, change, positive, icon: Icon }: StatCardProps)
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<Period>("30d");
 
-  const data = mockAnalytics;
+  const data = mockAnalytics as unknown as AnalyticsRuntime;
   const views = data.profileViews;
   const maxRevenue = Math.max(...data.revenueByService.map((r) => r.value));
   const maxCountry = Math.max(...data.topCountries.map((c) => c.visits));

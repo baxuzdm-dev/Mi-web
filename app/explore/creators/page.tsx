@@ -5,7 +5,6 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CreatorCard from "@/components/CreatorCard";
-import { useLang } from "@/contexts/LangContext";
 import { COUNTRIES } from "@/lib/countries";
 import { mockCreators, filterCreators } from "@/lib/mockData";
 
@@ -26,7 +25,6 @@ interface Creator {
 }
 
 export default function ExploreCreatorsPage() {
-  const { t } = useLang();
   const [search, setSearch] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");

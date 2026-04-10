@@ -29,7 +29,7 @@ const TABS: { id: Tab; label: string }[] = [
 function getIconMeta(type: MockNotification["type"]) {
   const map: Record<
     MockNotification["type"],
-    { icon: React.ComponentType<{ size?: number }>; bg: string; color: string }
+    { icon: React.ElementType; bg: string; color: string }
   > = {
     message:  { icon: MessageSquare, bg: "bg-violet-500/20", color: "text-violet-400" },
     proposal: { icon: Zap,           bg: "bg-pink-500/20",   color: "text-pink-400"   },

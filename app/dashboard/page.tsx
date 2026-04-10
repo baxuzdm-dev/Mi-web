@@ -93,7 +93,7 @@ function Sidebar() {
 interface StatCardProps {
   label: string;
   value: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ElementType;
   iconBg: string;
   iconColor: string;
 }
@@ -118,7 +118,7 @@ function StatCard({ label, value, icon: Icon, iconBg, iconColor }: StatCardProps
 // ─── Notification icon helper ─────────────────────────────────────────────────
 
 function notifIcon(type: string) {
-  const map: Record<string, { bg: string; color: string; icon: React.ComponentType<{ size?: number }> }> = {
+  const map: Record<string, { bg: string; color: string; icon: React.ElementType }> = {
     message:  { bg: "bg-violet-500/20", color: "text-violet-400", icon: MessageSquare },
     proposal: { bg: "bg-pink-500/20",   color: "text-pink-400",   icon: Zap },
     visit:    { bg: "bg-cyan-500/20",   color: "text-cyan-400",   icon: Eye },

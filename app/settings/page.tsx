@@ -22,6 +22,7 @@ import {
   Upload,
   ChevronRight,
   Check,
+  type LucideIcon,
 } from "lucide-react";
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -173,7 +174,7 @@ function Field({
 
 type Tab = "perfil" | "cuenta" | "notificaciones" | "privacidad" | "pagos" | "verificacion";
 
-const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: "perfil",         label: "Perfil",          icon: User        },
   { id: "cuenta",         label: "Cuenta",          icon: Lock        },
   { id: "notificaciones", label: "Notificaciones",  icon: BellRing    },
