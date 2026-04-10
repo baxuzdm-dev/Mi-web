@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Shield, CalendarDays, Users, DollarSign } from "lucide-react";
+import { Search, Shield, CalendarDays, Users, DollarSign, CheckCircle2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { mockCampaigns, type MockCampaign } from "@/lib/mockData";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,6 +74,7 @@ function PlatformPill({ platform }: { platform: string }) {
 // ─── Campaign Card ────────────────────────────────────────────────────────────
 
 function CampaignCard({ campaign }: { campaign: MockCampaign }) {
+  const [applied, setApplied] = useState(false);
   const days = daysUntil(campaign.deadline);
   const progress = Math.min(100, Math.round((campaign.creatorsApplied / campaign.creatorsNeeded) * 100));
 
@@ -187,9 +189,27 @@ function CampaignCard({ campaign }: { campaign: MockCampaign }) {
       </div>
 
       {/* CTA */}
-      <button className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm py-3 rounded-xl transition-all mt-auto">
-        Aplicar a esta campaña
-      </button>
+      <div className="flex gap-2 mt-auto">
+        {applied ? (
+          <div className="flex-1 flex items-center justify-center gap-2 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold text-sm py-3 rounded-xl">
+            <CheckCircle2 className="w-4 h-4" /> ¡Aplicación enviada!
+          </div>
+        ) : (
+          <button
+            onClick={() => setApplied(true)}
+            className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm py-3 rounded-xl transition-all"
+          >
+            Aplicar a esta campaña
+          </button>
+        )}
+        <Link
+          href={`/brand/${campaign.brandId.replace("brand-", "")}`}
+          className="flex items-center justify-center w-11 bg-white/5 border border-white/10 hover:border-white/20 rounded-xl transition-colors"
+          title="Ver marca"
+        >
+          <ExternalLink className="w-4 h-4 text-white/50" />
+        </Link>
+      </div>
     </article>
   );
 }

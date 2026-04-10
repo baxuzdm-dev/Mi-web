@@ -7,7 +7,9 @@ import {
   Star,
   Shield,
   ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
+import Link from "next/link";
 import { mockServices, type MockService } from "@/lib/mockData";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -91,6 +93,8 @@ function StarRating({ rating }: { rating: number }) {
 // ─── Service Card ─────────────────────────────────────────────────────────────
 
 function ServiceCard({ service }: { service: MockService }) {
+  const [contacted, setContacted] = useState(false);
+
   return (
     <article className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-4 hover:border-white/20 transition-colors">
       {/* Platform badge */}
@@ -100,7 +104,7 @@ function ServiceCard({ service }: { service: MockService }) {
       </div>
 
       {/* Creator info */}
-      <div className="flex items-center gap-3">
+      <Link href={`/profile/${service.creatorUsername}`} className="flex items-center gap-3 group">
         <div
           className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarGradient(service.creatorName)} flex items-center justify-center flex-shrink-0`}
         >
@@ -108,12 +112,12 @@ function ServiceCard({ service }: { service: MockService }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1 flex-wrap">
-            <span className="text-white text-sm font-semibold truncate">{service.creatorName}</span>
+            <span className="text-white text-sm font-semibold truncate group-hover:text-violet-300 transition-colors">{service.creatorName}</span>
             {service.creatorVerified && <Shield className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />}
           </div>
           <p className="text-white/40 text-xs">@{service.creatorUsername} · {formatFollowers(service.creatorFollowers)} seguidores</p>
         </div>
-      </div>
+      </Link>
 
       {/* Title & description */}
       <div className="flex-1">
@@ -145,9 +149,18 @@ function ServiceCard({ service }: { service: MockService }) {
           <span className="text-white text-xl font-bold">${formatPrice(service.price)}</span>
           <span className="text-white/40 text-xs ml-1">USD</span>
         </div>
-        <button className="border border-violet-500/40 text-violet-400 hover:bg-violet-500/10 text-xs font-medium px-4 py-2 rounded-lg transition-colors">
-          Ver servicio
-        </button>
+        {contacted ? (
+          <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-medium">
+            <CheckCircle2 className="w-4 h-4" /> Mensaje enviado
+          </span>
+        ) : (
+          <button
+            onClick={() => setContacted(true)}
+            className="border border-violet-500/40 text-violet-400 hover:bg-violet-500/10 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Contactar
+          </button>
+        )}
       </div>
     </article>
   );
@@ -177,14 +190,14 @@ function ServiceSection({
 // ─── Categories ──────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { label: "Videos", icon: "🎬" },
-  { label: "Posts", icon: "📸" },
-  { label: "Stories", icon: "📱" },
-  { label: "Lives", icon: "🔴" },
-  { label: "Reviews", icon: "📝" },
-  { label: "Unboxings", icon: "📦" },
-  { label: "Gaming", icon: "🎮" },
-  { label: "Podcasts", icon: "🎤" },
+  { label: "Videos", icon: "🎬", niche: "Gaming" },
+  { label: "Posts", icon: "📸", niche: "Lifestyle" },
+  { label: "Stories", icon: "📱", niche: "Fashion" },
+  { label: "Reviews", icon: "📝", niche: "Tech" },
+  { label: "Unboxings", icon: "📦", niche: "Tech" },
+  { label: "Food", icon: "🍽️", niche: "Food" },
+  { label: "Fitness", icon: "💪", niche: "Fitness" },
+  { label: "Belleza", icon: "💄", niche: "Beauty" },
 ];
 
 const PLATFORMS = ["Todos", "Instagram", "TikTok", "YouTube", "OnlyFans"];
@@ -227,6 +240,16 @@ export default function MarketplacePage() {
       );
     }
 
+    // Category (maps to niche)
+    if (activeCategory) {
+      const cat = CATEGORIES.find((c) => c.label === activeCategory);
+      if (cat) {
+        result = result.filter((s) =>
+          s.niche.some((n) => n.toLowerCase().includes(cat.niche.toLowerCase()))
+        );
+      }
+    }
+
     // Platform
     if (platform !== "Todos") {
       result = result.filter((s) => s.platform === platform);
@@ -248,7 +271,7 @@ export default function MarketplacePage() {
     }
 
     return result;
-  }, [search, platform, budgetIdx, sort]);
+  }, [search, activeCategory, platform, budgetIdx, sort]);
 
   // Top 4 by totalOrders from full list
   const topSellers = useMemo(
@@ -371,6 +394,12 @@ export default function MarketplacePage() {
           <div className="text-center py-20">
             <p className="text-white/30 text-lg">Sin resultados para tu búsqueda</p>
             <p className="text-white/20 text-sm mt-2">Intenta ajustar los filtros</p>
+            <button
+              onClick={() => { setSearch(""); setActiveCategory(null); setPlatform("Todos"); setBudgetIdx(0); }}
+              className="mt-4 text-violet-400 hover:text-violet-300 text-sm transition-colors"
+            >
+              Limpiar filtros
+            </button>
           </div>
         )}
 
@@ -383,3 +412,4 @@ export default function MarketplacePage() {
     </div>
   );
 }
+
