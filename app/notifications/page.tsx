@@ -11,7 +11,7 @@ import {
   UserPlus,
   Bell,
 } from "lucide-react";
-import { mockNotifications, MockNotification } from "@/lib/mockData";
+import { useApp, type AppNotification } from "@/contexts/AppContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,9 +26,9 @@ const TABS: { id: Tab; label: string }[] = [
 
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
-function getIconMeta(type: MockNotification["type"]) {
+function getIconMeta(type: AppNotification["type"]) {
   const map: Record<
-    MockNotification["type"],
+    AppNotification["type"],
     { icon: React.ElementType; bg: string; color: string }
   > = {
     message:  { icon: MessageSquare, bg: "bg-violet-500/20", color: "text-violet-400" },
@@ -46,14 +46,21 @@ function getIconMeta(type: MockNotification["type"]) {
 
 function timeAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60)   return "ahora";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 60)    return "ahora";
+  if (diff < 3600)  return `${Math.floor(diff / 60)}m`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
   return `${Math.floor(diff / 86400)}d`;
 }
 
-function filterNotifications(notifs: MockNotification[], tab: Tab): MockNotification[] {
-  if (tab === "no_leidas")  return notifs.filter((n) => !n.read);
+function filterNotifications(
+  notifs: AppNotification[],
+  tab: Tab,
+  notifRead: string[]
+): AppNotification[] {
+  const isUnread = (n: AppNotification) =>
+    !notifRead.includes(n.id) && !n.read;
+
+  if (tab === "no_leidas")  return notifs.filter(isUnread);
   if (tab === "propuestas") return notifs.filter((n) => n.type === "proposal" || n.type === "campaign");
   if (tab === "sistema")    return notifs.filter((n) => n.type === "accepted");
   return notifs;
@@ -61,13 +68,20 @@ function filterNotifications(notifs: MockNotification[], tab: Tab): MockNotifica
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
-function NotificationRow({ notif }: { notif: MockNotification }) {
+interface NotificationRowProps {
+  notif: AppNotification;
+  isUnread: boolean;
+  onRead: (id: string) => void;
+}
+
+function NotificationRow({ notif, isUnread, onRead }: NotificationRowProps) {
   const { icon: Icon, bg, color } = getIconMeta(notif.type);
 
   return (
     <div
+      onClick={() => onRead(notif.id)}
       className={`flex items-start gap-4 px-4 py-4 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-b-0 ${
-        !notif.read ? "bg-violet-500/5 border-l-2 border-l-violet-500 pl-3" : ""
+        isUnread ? "bg-violet-500/5 border-l-2 border-l-violet-500 pl-3" : ""
       }`}
     >
       {/* Icon */}
@@ -87,7 +101,7 @@ function NotificationRow({ notif }: { notif: MockNotification }) {
       {/* Right */}
       <div className="flex flex-col items-end gap-2 shrink-0">
         <span className="text-xs text-white/30">{timeAgo(notif.createdAt)}</span>
-        {!notif.read && (
+        {isUnread && (
           <span className="w-2 h-2 rounded-full bg-violet-500 block" />
         )}
       </div>
@@ -98,10 +112,14 @@ function NotificationRow({ notif }: { notif: MockNotification }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
+  const { allNotifications, unreadCount, markRead, markAllRead, state } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("todas");
 
-  const unreadCount = mockNotifications.filter((n) => !n.read).length;
-  const filtered = filterNotifications(mockNotifications, activeTab);
+  const filtered = filterNotifications(allNotifications, activeTab, state.notifRead);
+
+  function isUnread(n: AppNotification) {
+    return !state.notifRead.includes(n.id) && !n.read;
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] pt-16 pb-12">
@@ -120,7 +138,10 @@ export default function NotificationsPage() {
               </span>
             )}
           </div>
-          <button className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium">
+          <button
+            onClick={markAllRead}
+            className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium"
+          >
             Marcar todas como leídas
           </button>
         </div>
@@ -158,7 +179,14 @@ export default function NotificationsPage() {
               <p className="text-white/40 text-sm">Sin notificaciones en esta categoría</p>
             </div>
           ) : (
-            filtered.map((n) => <NotificationRow key={n.id} notif={n} />)
+            filtered.map((n) => (
+              <NotificationRow
+                key={n.id}
+                notif={n}
+                isUnread={isUnread(n)}
+                onRead={markRead}
+              />
+            ))
           )}
         </div>
 

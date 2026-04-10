@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState, useMemo } from "react";
 import {
   ShieldCheck,
   Star,
@@ -13,11 +14,17 @@ import {
   Megaphone,
   Clock,
   Zap,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { mockBrands, mockCampaigns, mockCreators } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
+import type { CampaignApplication } from "@/contexts/AppContext";
 
-/* ─── helpers ─────────────────────────────────────────────────── */
+/* ─── helpers ─────────────────────────────────────────────── */
 
 function getInitials(name: string) {
   return name
@@ -84,12 +91,179 @@ const CREATOR_GRADIENTS = [
   "from-emerald-500 to-teal-500",
 ];
 
+const APP_STATUS_STYLES: Record<string, string> = {
+  pending:  "bg-yellow-500/15 border-yellow-500/30 text-yellow-300",
+  accepted: "bg-emerald-500/15 border-emerald-500/30 text-emerald-300",
+  rejected: "bg-red-500/15 border-red-500/30 text-red-400",
+};
+const APP_STATUS_LABELS: Record<string, string> = {
+  pending: "Pendiente",
+  accepted: "Aceptado",
+  rejected: "Rechazado",
+};
+
+/* ─── Applications panel ──────────────────────────────────── */
+
+interface ApplicationsPanelProps {
+  campaignId: string;
+  seedApplications: CampaignApplication[];
+}
+
+function ApplicationsPanel({ campaignId, seedApplications }: ApplicationsPanelProps) {
+  const [open, setOpen] = useState(false);
+  const { getApplications, updateApplicationStatus } = useApp();
+
+  // Merge seed data with real state (real state overrides seed on matching applicant)
+  const stateApps = getApplications(campaignId);
+  const merged: CampaignApplication[] = useMemo(() => {
+    const stateUsernames = new Set(stateApps.map((a) => a.applicantUsername));
+    const seedFiltered = seedApplications.filter((a) => !stateUsernames.has(a.applicantUsername));
+    return [...stateApps, ...seedFiltered];
+  }, [stateApps, seedApplications]);
+
+  const count = merged.length;
+
+  return (
+    <div className="border-t border-white/10 mt-3 pt-3">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 text-xs font-medium text-white/60 hover:text-white transition-colors w-full"
+      >
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        Ver aplicaciones ({count})
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-3">
+          {count === 0 ? (
+            <p className="text-xs text-white/40 italic text-center py-4">
+              Aún no hay aplicaciones. Comparte tu campaña para recibir propuestas.
+            </p>
+          ) : (
+            merged.map((app) => (
+              <div
+                key={app.applicantUsername}
+                className="bg-white/[0.03] border border-white/10 rounded-xl p-3.5 flex flex-col gap-2.5"
+              >
+                {/* Applicant info row */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-white truncate">{app.applicantName}</p>
+                      <span className="text-xs text-white/40">@{app.applicantUsername}</span>
+                      <span className="text-xs text-violet-300">{formatFollowers(app.applicantFollowers)} seg.</span>
+                    </div>
+                    <p className="text-xs text-white/50 mt-1 line-clamp-2 leading-relaxed">
+                      {app.message.length > 120 ? app.message.slice(0, 120) + "…" : app.message}
+                    </p>
+                    <p className="text-[10px] text-white/30 mt-1">
+                      Aplicó: {new Date(app.appliedAt).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-[10px] border rounded-full px-2 py-0.5 font-medium ${APP_STATUS_STYLES[app.status]}`}>
+                    {APP_STATUS_LABELS[app.status]}
+                  </span>
+                </div>
+
+                {/* Action buttons */}
+                {app.status === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateApplicationStatus(campaignId, app.applicantUsername, "accepted")}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 text-emerald-300 rounded-lg transition-all"
+                    >
+                      <CheckCircle2 size={12} />
+                      Aceptar ✓
+                    </button>
+                    <button
+                      onClick={() => updateApplicationStatus(campaignId, app.applicantUsername, "rejected")}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-red-600/15 hover:bg-red-600/30 border border-red-500/25 text-red-400 rounded-lg transition-all"
+                    >
+                      <XCircle size={12} />
+                      Rechazar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════ */
 export default function BrandProfilePage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
 
   const brand = mockBrands.find((b) => b.username === username);
+
+  // Seed applications per campaign — realistic demo data
+  const seedApplicationsMap = useMemo<Record<string, CampaignApplication[]>>(() => {
+    if (!brand) return {};
+    const campaigns = mockCampaigns.filter((c) => c.brandId === brand.id);
+    const map: Record<string, CampaignApplication[]> = {};
+    const allSeeds: CampaignApplication[][] = [
+      [
+        {
+          campaignId: "",
+          appliedAt: "2026-04-05T14:30:00Z",
+          message: "Hola! Soy creadora de contenido lifestyle con 850K seguidores en Instagram y TikTok. Creo que encajo perfectamente con los valores de tu marca y puedo generar contenido auténtico que resuene con tu audiencia objetivo.",
+          status: "pending",
+          applicantName: "Sofia Ramírez",
+          applicantUsername: "sofiaramirez",
+          applicantFollowers: 850000,
+        },
+        {
+          campaignId: "",
+          appliedAt: "2026-04-06T09:15:00Z",
+          message: "Tengo experiencia comprobada en campañas de moda y lifestyle. Mi tasa de engagement supera el 5% y mis seguidores confían mucho en mis recomendaciones. Me encantaría colaborar.",
+          status: "pending",
+          applicantName: "Daniela Flores",
+          applicantUsername: "dani.flores.fashion",
+          applicantFollowers: 710000,
+        },
+        {
+          campaignId: "",
+          appliedAt: "2026-04-07T16:00:00Z",
+          message: "Trabajo el nicho de fitness y lifestyle. Mi audiencia es 70% femenina entre 18-34 años, justo el perfil que buscan. Tengo disponibilidad inmediata para iniciar la colaboración.",
+          status: "accepted",
+          applicantName: "Mateo García",
+          applicantUsername: "mateo_fit",
+          applicantFollowers: 430000,
+        },
+      ],
+      [
+        {
+          campaignId: "",
+          appliedAt: "2026-04-04T11:00:00Z",
+          message: "Soy el chef con más crecimiento en YouTube LATAM. Mi contenido de gastronomía tiene un alcance masivo y podría posicionar tu marca de manera única y auténtica ante millones de latinos.",
+          status: "accepted",
+          applicantName: "Carlos Reyes",
+          applicantUsername: "carlos.reyes.chef",
+          applicantFollowers: 1900000,
+        },
+        {
+          campaignId: "",
+          appliedAt: "2026-04-08T10:30:00Z",
+          message: "Me especializo en contenido de cocina colombiana. Tengo una comunidad muy leal y activa. ¡Me encantaría mostrar tu marca en mis próximas recetas!",
+          status: "pending",
+          applicantName: "Camila Rodríguez",
+          applicantUsername: "camilacooks",
+          applicantFollowers: 390000,
+        },
+      ],
+    ];
+
+    campaigns.forEach((camp, idx) => {
+      const seeds = allSeeds[idx % allSeeds.length];
+      map[camp.id] = seeds.map((s) => ({ ...s, campaignId: camp.id }));
+    });
+
+    return map;
+  }, [brand]);
 
   if (!brand) {
     return (
@@ -114,6 +288,16 @@ export default function BrandProfilePage() {
 
   const campaigns = mockCampaigns.filter((c) => c.brandId === brand.id);
   const featuredCreators = mockCreators.slice(0, 4);
+
+  // Brand stats
+  const totalCampaigns = campaigns.length;
+  const totalApplicants = campaigns.reduce((sum, c) => sum + c.creatorsApplied, 0);
+  const totalBudget = campaigns
+    .filter((c) => c.status === "active")
+    .reduce((sum, c) => sum + c.totalBudget, 0);
+  const budgetLabel = totalBudget >= 1000
+    ? `$${(totalBudget / 1000).toFixed(0)}K`
+    : `$${totalBudget}`;
 
   const brandReviews = [
     {
@@ -156,16 +340,16 @@ export default function BrandProfilePage() {
             </div>
             <p className="text-white/70 text-sm max-w-xl mb-3 leading-relaxed">{brand.description}</p>
 
-            {/* Stats */}
+            {/* Real stats */}
             <div className="flex flex-wrap gap-4 text-sm">
               <span className="text-white/60">
-                <span className="text-white font-semibold">{brand.activeCampaigns}</span> campañas activas
+                <span className="text-white font-semibold">{totalCampaigns}</span> campañas
               </span>
               <span className="text-white/60">
-                <span className="text-white font-semibold">$200K+</span> invertido
+                <span className="text-white font-semibold">{totalApplicants}</span> aplicantes totales
               </span>
               <span className="text-white/60">
-                <span className="text-white font-semibold">45</span> creadores contratados
+                <span className="text-white font-semibold">{budgetLabel}</span> presupuesto activo
               </span>
             </div>
           </div>
@@ -265,6 +449,12 @@ export default function BrandProfilePage() {
                       Aplicar
                     </button>
                   </div>
+
+                  {/* Applications panel */}
+                  <ApplicationsPanel
+                    campaignId={camp.id}
+                    seedApplications={seedApplicationsMap[camp.id] ?? []}
+                  />
                 </div>
               ))}
             </div>

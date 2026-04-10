@@ -18,9 +18,12 @@ import {
   BarChart2,
   Video,
   Share2,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { mockAgencies, mockCreators } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 
@@ -85,6 +88,10 @@ export default function AgencyProfilePage() {
   );
 
   const [activeTab, setActiveTab] = useState<Tab>("Sobre nosotros");
+  const { toggleFollow, isFollowing } = useApp();
+
+  const agencySlug = slugify(agency?.name ?? "");
+  const following = isFollowing(agencySlug);
 
   if (!agency) {
     return (
@@ -200,6 +207,26 @@ export default function AgencyProfilePage() {
           <div className="flex gap-2 shrink-0 flex-wrap">
             <button className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-pink-600 to-violet-600 hover:from-pink-500 hover:to-violet-500 text-white rounded-xl transition-all">
               Aplicar para representación
+            </button>
+            <button
+              onClick={() => toggleFollow(agencySlug)}
+              className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all flex items-center gap-1.5 ${
+                following
+                  ? "bg-violet-600/20 border border-violet-500/40 text-violet-300 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-400"
+                  : "border border-white/20 text-white/80 hover:bg-white/5"
+              }`}
+            >
+              {following ? (
+                <>
+                  <UserCheck size={14} />
+                  Siguiendo ✓
+                </>
+              ) : (
+                <>
+                  <UserPlus size={14} />
+                  Seguir agencia
+                </>
+              )}
             </button>
             <button className="px-4 py-2 text-sm font-semibold border border-white/20 text-white/80 hover:bg-white/5 rounded-xl transition-all flex items-center gap-1.5">
               <MessageSquare size={14} />
@@ -321,34 +348,52 @@ export default function AgencyProfilePage() {
         {activeTab === "Nuestros Creadores" && (
           <div className="mt-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {displayedCreators.map((creator, idx) => (
-                <Link
-                  key={creator.id}
-                  href={`/profile/${creator.username}`}
-                  className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-3 hover:border-violet-500/30 transition-colors"
-                >
+              {displayedCreators.map((creator, idx) => {
+                const creatorFollowing = isFollowing(creator.username);
+                return (
                   <div
-                    className={`w-14 h-14 rounded-full bg-gradient-to-br ${CREATOR_GRADIENTS[idx % CREATOR_GRADIENTS.length]} flex items-center justify-center text-lg font-bold text-white`}
+                    key={creator.id}
+                    className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col items-center gap-3 hover:border-violet-500/30 transition-colors"
                   >
-                    {getInitials(creator.user.name)}
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-white text-sm">{creator.user.name}</p>
-                    <p className="text-white/50 text-xs">@{creator.username}</p>
-                  </div>
-                  <div className="flex flex-wrap justify-center gap-1">
-                    {creator.niche.slice(0, 2).map((n) => (
-                      <span
-                        key={n}
-                        className="text-[10px] bg-violet-500/15 border border-violet-500/30 text-violet-300 rounded-full px-2 py-0.5"
+                    <Link href={`/profile/${creator.username}`} className="flex flex-col items-center gap-3 w-full">
+                      <div
+                        className={`w-14 h-14 rounded-full bg-gradient-to-br ${CREATOR_GRADIENTS[idx % CREATOR_GRADIENTS.length]} flex items-center justify-center text-lg font-bold text-white`}
                       >
-                        {n}
-                      </span>
-                    ))}
+                        {getInitials(creator.user.name)}
+                      </div>
+                      <div className="text-center">
+                        <p className="font-semibold text-white text-sm">{creator.user.name}</p>
+                        <p className="text-white/50 text-xs">@{creator.username}</p>
+                      </div>
+                      <div className="flex flex-wrap justify-center gap-1">
+                        {creator.niche.slice(0, 2).map((n) => (
+                          <span
+                            key={n}
+                            className="text-[10px] bg-violet-500/15 border border-violet-500/30 text-violet-300 rounded-full px-2 py-0.5"
+                          >
+                            {n}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-white/60 text-xs font-medium">{formatFollowers(creator.followers)} seguidores</p>
+                    </Link>
+                    <button
+                      onClick={() => toggleFollow(creator.username)}
+                      className={`w-full py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1 ${
+                        creatorFollowing
+                          ? "bg-violet-600/20 border border-violet-500/40 text-violet-300"
+                          : "bg-white/5 border border-white/15 text-white/70 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {creatorFollowing ? (
+                        <><UserCheck size={11} /> Siguiendo</>
+                      ) : (
+                        <><UserPlus size={11} /> Seguir</>
+                      )}
+                    </button>
                   </div>
-                  <p className="text-white/60 text-xs font-medium">{formatFollowers(creator.followers)} seguidores</p>
-                </Link>
-              ))}
+                );
+              })}
             </div>
             <div className="flex justify-center mt-6">
               <button className="px-6 py-2.5 text-sm font-medium border border-white/20 text-white/70 hover:bg-white/5 rounded-xl transition-all">

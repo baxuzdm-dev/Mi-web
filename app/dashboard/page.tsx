@@ -15,30 +15,30 @@ import {
   DollarSign,
   User,
   Plus,
+  Users,
 } from "lucide-react";
 import {
-  mockNotifications,
   mockCampaigns,
   mockConversations,
 } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
 
-const unreadNotifications = mockNotifications.filter((n) => !n.read).length;
 const unreadMessages = mockConversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-const navItems = [
-  { icon: Home, label: "Inicio", href: "/feed" },
-  { icon: Search, label: "Explorar", href: "/explore/creators" },
-  { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
-  { icon: Megaphone, label: "Campañas", href: "/campaigns" },
-  { icon: MessageSquare, label: "Mensajes", href: "/chat", badge: unreadMessages > 0 ? String(unreadMessages > 99 ? "99+" : unreadMessages) : undefined },
-  { icon: Bell, label: "Notificaciones", href: "/notifications", badge: unreadNotifications > 0 ? String(unreadNotifications > 99 ? "99+" : unreadNotifications) : undefined },
-  { icon: BarChart2, label: "Analytics", href: "/analytics" },
-  { icon: Settings, label: "Ajustes", href: "/settings" },
-];
+function Sidebar({ notifBadge }: { notifBadge: number }) {
+  const navItems = [
+    { icon: Home, label: "Inicio", href: "/feed" },
+    { icon: Search, label: "Explorar", href: "/explore/creators" },
+    { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
+    { icon: Megaphone, label: "Campañas", href: "/campaigns" },
+    { icon: MessageSquare, label: "Mensajes", href: "/chat", badge: unreadMessages > 0 ? String(unreadMessages > 99 ? "99+" : unreadMessages) : undefined },
+    { icon: Bell, label: "Notificaciones", href: "/notifications", badge: notifBadge > 0 ? String(notifBadge > 99 ? "99+" : notifBadge) : undefined },
+    { icon: BarChart2, label: "Analytics", href: "/analytics" },
+    { icon: Settings, label: "Ajustes", href: "/settings" },
+  ];
 
-function Sidebar() {
   return (
     <aside className="w-64 shrink-0 hidden md:flex flex-col bg-[#0d0d14] border-r border-white/[0.08] min-h-screen pt-6 pb-4 px-3">
       {/* Logo */}
@@ -100,16 +100,19 @@ interface StatCardProps {
   icon: React.ElementType;
   iconBg: string;
   iconColor: string;
+  subtitle?: string;
 }
 
-function StatCard({ label, value, icon: Icon, iconBg, iconColor }: StatCardProps) {
+function StatCard({ label, value, icon: Icon, iconBg, iconColor, subtitle }: StatCardProps) {
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
           <Icon size={18} className={iconColor} />
         </div>
-        <span className="text-emerald-400 text-xs font-medium">+12% vs semana pasada</span>
+        {subtitle && (
+          <span className="text-white/40 text-xs font-medium">{subtitle}</span>
+        )}
       </div>
       <div>
         <p className="text-2xl font-bold text-white">{value}</p>
@@ -144,14 +147,41 @@ function timeAgo(iso: string) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const recentNotifs = mockNotifications.slice(0, 5);
+  const { state, allNotifications, unreadCount } = useApp();
+
+  const recentNotifs = allNotifications.slice(0, 5);
   const featuredCampaigns = mockCampaigns.slice(0, 3);
 
-  const stats = [
-    { label: "Visitas al perfil",    value: "2,847",  icon: Eye,            iconBg: "bg-violet-500/20", iconColor: "text-violet-400" },
-    { label: "Mensajes nuevos",      value: "4",      icon: MessageSquare,  iconBg: "bg-pink-500/20",   iconColor: "text-pink-400"   },
-    { label: "Propuestas recibidas", value: "2",      icon: Zap,            iconBg: "bg-emerald-500/20",iconColor: "text-emerald-400" },
-    { label: "Ingresos del mes",     value: "$3,200", icon: DollarSign,     iconBg: "bg-orange-500/20", iconColor: "text-orange-400" },
+  const stats: StatCardProps[] = [
+    {
+      label: "Seguidores",
+      value: "850K",
+      icon: Users,
+      iconBg: "bg-violet-500/20",
+      iconColor: "text-violet-400",
+      subtitle: `Siguiendo: ${state.following.length}`,
+    },
+    {
+      label: "Campañas aplicadas",
+      value: String(state.applications.length),
+      icon: Megaphone,
+      iconBg: "bg-pink-500/20",
+      iconColor: "text-pink-400",
+    },
+    {
+      label: "Notificaciones sin leer",
+      value: String(unreadCount),
+      icon: Bell,
+      iconBg: "bg-emerald-500/20",
+      iconColor: "text-emerald-400",
+    },
+    {
+      label: "Ingresos del mes",
+      value: "$3,200",
+      icon: DollarSign,
+      iconBg: "bg-orange-500/20",
+      iconColor: "text-orange-400",
+    },
   ];
 
   const quickActions = [
@@ -163,7 +193,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-[#0a0a0f]">
-      <Sidebar />
+      <Sidebar notifBadge={unreadCount} />
 
       {/* Main */}
       <main className="flex-1 overflow-auto p-6">
@@ -191,25 +221,43 @@ export default function DashboardPage() {
             <section className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <h2 className="text-base font-semibold text-white mb-4">Actividad reciente</h2>
               <ul className="space-y-0">
-                {recentNotifs.map((n, i) => {
-                  const { bg, color, icon: Icon } = notifIcon(n.type);
-                  return (
-                    <li
-                      key={n.id}
-                      className={`flex items-start gap-3 py-3 ${i < recentNotifs.length - 1 ? "border-b border-white/5" : ""}`}
-                    >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${bg}`}>
-                        <Icon size={13} className={color} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white leading-snug truncate">{n.title}</p>
-                        <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{n.body}</p>
-                      </div>
-                      <span className="text-xs text-white/30 shrink-0">{timeAgo(n.createdAt)}</span>
-                    </li>
-                  );
-                })}
+                {recentNotifs.length === 0 ? (
+                  <li className="text-sm text-white/40 text-center py-6">No hay actividad reciente.</li>
+                ) : (
+                  recentNotifs.map((n, i) => {
+                    const { bg, color, icon: Icon } = notifIcon(n.type);
+                    const isUnread = !state.notifRead.includes(n.id) && !n.read;
+                    return (
+                      <li
+                        key={n.id}
+                        className={`flex items-start gap-3 py-3 ${i < recentNotifs.length - 1 ? "border-b border-white/5" : ""} ${isUnread ? "opacity-100" : "opacity-60"}`}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${bg}`}>
+                          <Icon size={13} className={color} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm text-white leading-snug truncate">{n.title}</p>
+                            {isUnread && (
+                              <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-violet-400" />
+                            )}
+                          </div>
+                          <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{n.body}</p>
+                        </div>
+                        <span className="text-xs text-white/30 shrink-0">{timeAgo(n.createdAt)}</span>
+                      </li>
+                    );
+                  })
+                )}
               </ul>
+              {recentNotifs.length > 0 && (
+                <Link
+                  href="/notifications"
+                  className="block mt-3 text-xs text-center text-violet-400 hover:text-violet-300 transition-colors"
+                >
+                  Ver todas las notificaciones →
+                </Link>
+              )}
             </section>
 
             {/* 4. Acciones rápidas */}
@@ -260,7 +308,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <Link
-                      href={`/campaigns`}
+                      href="/campaigns"
                       className="text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-lg transition-colors"
                     >
                       Aplicar

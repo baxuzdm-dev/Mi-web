@@ -2,11 +2,205 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, LayoutDashboard, LogOut, Menu, X, Zap, Search, ShoppingBag, Megaphone } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useLang } from "@/contexts/LangContext";
+import { useApp } from "@/contexts/AppContext";
+import { mockCreators, mockAgencies, mockCampaigns } from "@/lib/mockData";
+
+// ─── Search Bar ───────────────────────────────────────────────────────────────
+
+function GlobalSearch() {
+  const { setSearch, state } = useApp();
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const query = state.searchQuery;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setFocused(false);
+        setSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [setSearch]);
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+    },
+    [setSearch]
+  );
+
+  function handleClose() {
+    setSearch("");
+    setFocused(false);
+    inputRef.current?.blur();
+  }
+
+  // Filter results
+  const q = query.toLowerCase();
+  const creatorResults = q
+    ? mockCreators
+        .filter(
+          (c) =>
+            c.username.toLowerCase().includes(q) ||
+            c.user.name.toLowerCase().includes(q) ||
+            c.bio.toLowerCase().includes(q)
+        )
+        .slice(0, 3)
+    : [];
+
+  const agencyResults = q
+    ? mockAgencies
+        .filter((a) => a.name.toLowerCase().includes(q))
+        .slice(0, 3)
+    : [];
+
+  const campaignResults = q
+    ? mockCampaigns
+        .filter(
+          (c) =>
+            c.title.toLowerCase().includes(q) ||
+            c.brandName.toLowerCase().includes(q)
+        )
+        .slice(0, 3)
+    : [];
+
+  const hasResults =
+    creatorResults.length > 0 ||
+    agencyResults.length > 0 ||
+    campaignResults.length > 0;
+
+  const showDropdown = focused && query.length > 0;
+
+  return (
+    <div ref={containerRef} className="relative hidden md:block">
+      {/* Input */}
+      <div
+        className={`flex items-center gap-2 bg-white/5 border rounded-xl px-3 py-1.5 transition-all ${
+          focused
+            ? "border-violet-500/50 w-64"
+            : "border-white/10 w-44 hover:border-white/20"
+        }`}
+      >
+        <Search className="w-3.5 h-3.5 text-white/40 flex-shrink-0" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={handleChange}
+          onFocus={() => setFocused(true)}
+          placeholder="Buscar creadores, campañas…"
+          className="bg-transparent text-white text-xs placeholder:text-white/30 outline-none w-full min-w-0"
+        />
+        {query && (
+          <button onClick={handleClose} className="text-white/30 hover:text-white/60 transition-colors flex-shrink-0">
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      {showDropdown && (
+        <div className="absolute top-full mt-2 left-0 w-80 bg-[#13131a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+          {!hasResults ? (
+            <div className="px-4 py-6 text-center">
+              <p className="text-white/40 text-sm">Sin resultados para &ldquo;{query}&rdquo;</p>
+            </div>
+          ) : (
+            <div className="max-h-80 overflow-y-auto">
+              {creatorResults.length > 0 && (
+                <div>
+                  <p className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white/30 border-b border-white/5">
+                    Creadores
+                  </p>
+                  {creatorResults.map((creator) => (
+                    <Link
+                      key={creator.id}
+                      href={`/creator/${creator.username}`}
+                      onClick={handleClose}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">
+                          {creator.user.name[0]?.toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{creator.user.name}</p>
+                        <p className="text-white/40 text-xs truncate">@{creator.username} · {creator.niche[0]}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {agencyResults.length > 0 && (
+                <div>
+                  <p className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white/30 border-b border-white/5 border-t border-t-white/5">
+                    Agencias
+                  </p>
+                  {agencyResults.map((agency) => (
+                    <Link
+                      key={agency.id}
+                      href={`/agency/${agency.id}`}
+                      onClick={handleClose}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-600 to-orange-500 flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">
+                          {agency.name[0]?.toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{agency.name}</p>
+                        <p className="text-white/40 text-xs truncate">{agency.country} · {agency.rosterSize} creadores</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {campaignResults.length > 0 && (
+                <div>
+                  <p className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white/30 border-b border-white/5 border-t border-t-white/5">
+                    Campañas
+                  </p>
+                  {campaignResults.map((campaign) => (
+                    <Link
+                      key={campaign.id}
+                      href="/campaigns"
+                      onClick={handleClose}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-600 to-yellow-500 flex items-center justify-center flex-shrink-0">
+                        <Megaphone className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{campaign.title}</p>
+                        <p className="text-white/40 text-xs truncate">{campaign.brandName} · ${campaign.budgetPerCreator.toLocaleString()}/creator</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Navbar ───────────────────────────────────────────────────────────────────
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -51,6 +245,9 @@ export default function Navbar() {
               </Link>
             </Button>
           </div>
+
+          {/* Global search — desktop only, between nav and actions */}
+          <GlobalSearch />
 
           {/* Right side */}
           <div className="flex items-center gap-1">

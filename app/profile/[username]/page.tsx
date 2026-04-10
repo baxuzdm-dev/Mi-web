@@ -8,9 +8,12 @@ import {
   ArrowLeft,
   Clock,
   Users,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { mockCreators, mockServices } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 
@@ -56,16 +59,142 @@ function PlatformBadge({ platform }: { platform: string }) {
   );
 }
 
+/* ─── Profile completeness bar ────────────────────────────────── */
+
+interface CompletenessProps {
+  bio: string;
+  country: string;
+  niches: string[];
+  platforms: string[];
+  isVerified: boolean;
+  isOwnProfile: boolean;
+}
+
+function ProfileCompletenessBar({ bio, country, niches, platforms, isVerified, isOwnProfile }: CompletenessProps) {
+  const checks = [
+    { ok: !!bio,                 label: "Añade tu bio →",         href: "/settings" },
+    { ok: !!country,             label: "Añade tu país →",        href: "/settings" },
+    { ok: niches.length > 0,     label: "Añade tu nicho →",       href: "/settings" },
+    { ok: platforms.length > 0,  label: "Añade plataformas →",    href: "/settings" },
+    { ok: isVerified,            label: "Verifica tu cuenta →",   href: "/settings?tab=verificacion" },
+  ];
+
+  const completed = checks.filter((c) => c.ok).length;
+  const percent = Math.round((completed / checks.length) * 100);
+  const missing = checks.filter((c) => !c.ok);
+
+  const barColor =
+    percent === 100 ? "from-emerald-500 to-teal-400" :
+    percent >= 60   ? "from-violet-500 to-pink-500" :
+                     "from-orange-500 to-amber-400";
+
+  if (!isOwnProfile) return null;
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium text-white">Perfil {percent}% completo</span>
+        <span className="text-xs text-white/40">{completed}/{checks.length}</span>
+      </div>
+      <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+        <div
+          className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-500`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      {missing.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {missing.map((m) => (
+            <Link
+              key={m.label}
+              href={m.href}
+              className="text-xs bg-white/5 border border-white/10 hover:border-violet-500/40 hover:text-violet-300 text-white/50 rounded-full px-3 py-1 transition-colors"
+            >
+              {m.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Similar creators sidebar ────────────────────────────────── */
+
+function SimilarCreators({ currentUsername, niches }: { currentUsername: string; niches: string[] }) {
+  const { toggleFollow, isFollowing } = useApp();
+
+  const similar = mockCreators
+    .filter(
+      (c) =>
+        c.username !== currentUsername &&
+        c.niche.some((n) => niches.includes(n))
+    )
+    .slice(0, 3);
+
+  if (similar.length === 0) return null;
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mt-6">
+      <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">
+        Creadores similares
+      </h2>
+      <div className="space-y-4">
+        {similar.map((c) => {
+          const following = isFollowing(c.username);
+          const sharedNiches = c.niche.filter((n) => niches.includes(n));
+          return (
+            <div key={c.id} className="flex items-center gap-3">
+              <Link href={`/profile/${c.username}`} className="shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white">
+                  {getInitials(c.user.name)}
+                </div>
+              </Link>
+              <div className="flex-1 min-w-0">
+                <Link href={`/profile/${c.username}`} className="block">
+                  <p className="text-sm font-medium text-white truncate hover:text-violet-300 transition-colors">
+                    {c.user.name}
+                  </p>
+                  <p className="text-xs text-white/40 truncate">@{c.username}</p>
+                </Link>
+                {sharedNiches.length > 0 && (
+                  <span className="inline-block mt-1 text-[10px] bg-violet-500/15 border border-violet-500/30 text-violet-300 rounded-full px-2 py-0.5">
+                    {sharedNiches[0]}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => toggleFollow(c.username)}
+                className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                  following
+                    ? "bg-violet-600/20 border-violet-500/40 text-violet-300"
+                    : "border-white/20 text-white/60 hover:border-violet-500/40 hover:text-violet-300"
+                }`}
+              >
+                {following ? "Siguiendo" : "Seguir"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 type Tab = "Sobre mí" | "Servicios" | "Portafolio" | "Reseñas";
 
 /* ═══════════════════════════════════════════════════════════════ */
 export default function CreatorProfilePage() {
   const params = useParams<{ username: string }>();
   const username = params.username;
+  const { toggleFollow, isFollowing } = useApp();
 
   const creator = mockCreators.find((c) => c.username === username);
 
   const [activeTab, setActiveTab] = useState<Tab>("Sobre mí");
+
+  // Demo: "sofiaramirez" is the logged-in user's own profile
+  const isOwnProfile = username === "sofiaramirez";
 
   if (!creator) {
     return (
@@ -74,7 +203,7 @@ export default function CreatorProfilePage() {
           <Users size={32} className="text-white/30" />
         </div>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-2">Creador no encontrado</h1>
+          <h1 className="text-2xl font-bold text-white">Creador no encontrado</h1>
           <p className="text-white/50">El perfil @{username} no existe o fue eliminado.</p>
         </div>
         <Link
@@ -87,6 +216,9 @@ export default function CreatorProfilePage() {
       </div>
     );
   }
+
+  const following = isFollowing(username);
+  const displayedFollowers = creator.followers + (following ? 1 : 0);
 
   const services = mockServices.filter((s) => s.creatorId === creator.id).slice(0, 3);
 
@@ -124,7 +256,7 @@ export default function CreatorProfilePage() {
             {/* Stats */}
             <div className="flex flex-wrap gap-4 mt-3 text-sm">
               <span className="text-white/60">
-                <span className="text-white font-semibold">{formatFollowers(creator.followers)}</span>
+                <span className="text-white font-semibold">{formatFollowers(displayedFollowers)}</span>
                 {" "}seguidores
               </span>
               <span className="text-white/60">
@@ -137,18 +269,47 @@ export default function CreatorProfilePage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 shrink-0">
+          <div className="flex gap-2 shrink-0 flex-wrap">
             <button className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white rounded-xl transition-all">
               Contratar
             </button>
-            <button className="px-4 py-2 text-sm font-semibold border border-white/20 text-white/80 hover:bg-white/5 rounded-xl transition-all">
-              Seguir
-            </button>
+            {!isOwnProfile && (
+              <button
+                onClick={() => toggleFollow(username)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl border transition-all ${
+                  following
+                    ? "bg-violet-600/20 border-violet-500/40 text-violet-300"
+                    : "border-violet-500/50 text-violet-300 hover:bg-violet-600/20"
+                }`}
+              >
+                {following ? (
+                  <>
+                    <UserCheck size={15} />
+                    Siguiendo ✓
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={15} />
+                    Seguir
+                  </>
+                )}
+              </button>
+            )}
             <button className="px-4 py-2 text-sm font-semibold border border-white/20 text-white/80 hover:bg-white/5 rounded-xl transition-all">
               Mensaje
             </button>
           </div>
         </div>
+
+        {/* Profile completeness bar (own profile only) */}
+        <ProfileCompletenessBar
+          bio={creator.bio}
+          country={creator.country}
+          niches={creator.niche}
+          platforms={creator.platforms}
+          isVerified={creator.isVerified}
+          isOwnProfile={isOwnProfile}
+        />
 
         {/* Tabs */}
         <div className="flex gap-1 mt-6 border-b border-white/10">
@@ -237,6 +398,9 @@ export default function CreatorProfilePage() {
               </div>
               <div className={`w-3 h-3 rounded-full ${creator.isAvailable ? "bg-emerald-400" : "bg-white/20"}`} />
             </div>
+
+            {/* Similar Creators */}
+            <SimilarCreators currentUsername={username} niches={creator.niche} />
           </div>
         )}
 

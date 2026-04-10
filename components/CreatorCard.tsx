@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Users, DollarSign, ShieldCheck } from "lucide-react";
+import { MapPin, Users, DollarSign, ShieldCheck, UserPlus, UserCheck } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -21,77 +21,102 @@ interface CreatorCardProps {
   };
   showApply?: boolean;
   onApply?: () => void;
+  showFollow?: boolean;
+  isFollowing?: boolean;
+  onFollow?: () => void;
 }
 
-export default function CreatorCard({ creator }: CreatorCardProps) {
+export default function CreatorCard({ creator, showFollow, isFollowing, onFollow }: CreatorCardProps) {
   const displayName = creator.user?.name ?? creator.username;
   const avatar = creator.avatar ?? creator.user?.image;
 
   return (
-    <Link href={`/profile/${creator.username}`}>
-      <Card className="group hover:border-violet-500/30 hover:bg-white/6 transition-all duration-200 cursor-pointer h-full">
-        <CardContent className="p-5">
-          <div className="flex items-start gap-4">
-            <div className="relative">
-              <Avatar className="w-14 h-14">
-                <AvatarImage src={avatar ?? ""} alt={displayName ?? ""} />
-                <AvatarFallback className="text-lg">
-                  {displayName?.[0]?.toUpperCase() ?? "C"}
-                </AvatarFallback>
-              </Avatar>
-              {creator.isAvailable && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0a0a0f]" />
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-semibold text-white truncate">@{creator.username}</span>
-                {creator.isVerified && (
-                  <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
+    <div className="flex flex-col">
+      <Link href={`/profile/${creator.username}`}>
+        <Card className="group hover:border-violet-500/30 hover:bg-white/6 transition-all duration-200 cursor-pointer h-full">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="relative">
+                <Avatar className="w-14 h-14">
+                  <AvatarImage src={avatar ?? ""} alt={displayName ?? ""} />
+                  <AvatarFallback className="text-lg">
+                    {displayName?.[0]?.toUpperCase() ?? "C"}
+                  </AvatarFallback>
+                </Avatar>
+                {creator.isAvailable && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0a0a0f]" />
                 )}
               </div>
-              {creator.bio && (
-                <p className="text-sm text-white/50 mt-0.5 line-clamp-2">{creator.bio}</p>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-semibold text-white truncate">@{creator.username}</span>
+                  {creator.isVerified && (
+                    <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
+                  )}
+                </div>
+                {creator.bio && (
+                  <p className="text-sm text-white/50 mt-0.5 line-clamp-2">{creator.bio}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div className="flex items-center gap-1.5 text-white/60">
+                <Users className="w-3.5 h-3.5 text-violet-400" />
+                <span>{formatNumber(creator.followers)} followers</span>
+              </div>
+              {creator.estimatedIncome > 0 && (
+                <div className="flex items-center gap-1.5 text-white/60">
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{formatCurrency(creator.estimatedIncome)}/mo</span>
+                </div>
+              )}
+              {creator.country && (
+                <div className="flex items-center gap-1.5 text-white/60">
+                  <MapPin className="w-3.5 h-3.5 text-pink-400" />
+                  <span>{creator.country}</span>
+                </div>
               )}
             </div>
-          </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-            <div className="flex items-center gap-1.5 text-white/60">
-              <Users className="w-3.5 h-3.5 text-violet-400" />
-              <span>{formatNumber(creator.followers)} followers</span>
-            </div>
-            {creator.estimatedIncome > 0 && (
-              <div className="flex items-center gap-1.5 text-white/60">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{formatCurrency(creator.estimatedIncome)}/mo</span>
+            {creator.niche.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {creator.niche.slice(0, 3).map((n) => (
+                  <Badge key={n} variant="default" className="text-xs">
+                    {n}
+                  </Badge>
+                ))}
+                {creator.niche.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{creator.niche.length - 3}
+                  </Badge>
+                )}
               </div>
             )}
-            {creator.country && (
-              <div className="flex items-center gap-1.5 text-white/60">
-                <MapPin className="w-3.5 h-3.5 text-pink-400" />
-                <span>{creator.country}</span>
-              </div>
-            )}
-          </div>
+          </CardContent>
+        </Card>
+      </Link>
 
-          {creator.niche.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {creator.niche.slice(0, 3).map((n) => (
-                <Badge key={n} variant="default" className="text-xs">
-                  {n}
-                </Badge>
-              ))}
-              {creator.niche.length > 3 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{creator.niche.length - 3}
-                </Badge>
-              )}
-            </div>
+      {showFollow && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onFollow?.();
+          }}
+          className={`mt-2 w-full py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+            isFollowing
+              ? "bg-violet-600/20 border border-violet-500/40 text-violet-300 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400"
+              : "bg-white/5 border border-white/15 text-white/70 hover:bg-violet-600/15 hover:border-violet-500/30 hover:text-violet-300"
+          }`}
+        >
+          {isFollowing ? (
+            <><UserCheck className="w-3.5 h-3.5" /> Siguiendo ✓</>
+          ) : (
+            <><UserPlus className="w-3.5 h-3.5" /> Seguir</>
           )}
-        </CardContent>
-      </Card>
-    </Link>
+        </button>
+      )}
+    </div>
   );
 }

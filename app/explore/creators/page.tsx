@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import CreatorCard from "@/components/CreatorCard";
 import { COUNTRIES } from "@/lib/countries";
 import { mockCreators, filterCreators } from "@/lib/mockData";
+import { useApp } from "@/contexts/AppContext";
 
 const NICHES = ["Fitness", "Lifestyle", "Gaming", "Beauty", "Travel", "Food", "Fashion", "Music", "Art", "Tech", "Cosplay", "OnlyFans"];
 
@@ -31,6 +32,8 @@ export default function ExploreCreatorsPage() {
   const [minFollowers, setMinFollowers] = useState("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+
+  const { toggleFollow, isFollowing } = useApp();
 
   // Compute filtered mock data directly — no async loading needed
   const creators: Creator[] = filterCreators(mockCreators, {
@@ -188,7 +191,13 @@ export default function ExploreCreatorsPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {creators.map((creator) => (
-            <CreatorCard key={creator.id} creator={creator} />
+            <CreatorCard
+              key={creator.id}
+              creator={creator}
+              showFollow
+              isFollowing={isFollowing(creator.username)}
+              onFollow={() => toggleFollow(creator.username)}
+            />
           ))}
         </div>
       )}
