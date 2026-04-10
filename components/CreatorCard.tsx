@@ -28,7 +28,7 @@ export default function CreatorCard({ creator }: CreatorCardProps) {
   const avatar = creator.avatar ?? creator.user?.image;
 
   return (
-    <Link href={`/profile/creator/${creator.id}`}>
+    <Link href={`/profile/${creator.username}`}>
       <Card className="group hover:border-violet-500/30 hover:bg-white/6 transition-all duration-200 cursor-pointer h-full">
         <CardContent className="p-5">
           <div className="flex items-start gap-4">

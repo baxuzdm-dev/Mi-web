@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Image as ImageIcon, Video, Megaphone, Shield, Bookmark, Share2, MessageCircle, Flame } from "lucide-react";
 import { mockPosts, mockCreators, mockCampaigns, type MockPost } from "@/lib/mockData";
 
@@ -121,9 +122,9 @@ function PostCard({ post }: { post: MockPost }) {
                 ))}
               </div>
             </div>
-            <button className="flex-shrink-0 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+            <Link href="/campaigns" className="flex-shrink-0 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
               Ver campaña →
-            </button>
+            </Link>
           </div>
         </div>
       )}

@@ -19,7 +19,11 @@ import {
 import {
   mockNotifications,
   mockCampaigns,
+  mockConversations,
 } from "@/lib/mockData";
+
+const unreadNotifications = mockNotifications.filter((n) => !n.read).length;
+const unreadMessages = mockConversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -28,8 +32,8 @@ const navItems = [
   { icon: Search, label: "Explorar", href: "/explore/creators" },
   { icon: ShoppingBag, label: "Marketplace", href: "/marketplace" },
   { icon: Megaphone, label: "Campañas", href: "/campaigns" },
-  { icon: MessageSquare, label: "Mensajes", href: "/chat", badge: "3" },
-  { icon: Bell, label: "Notificaciones", href: "/notifications", badge: "4" },
+  { icon: MessageSquare, label: "Mensajes", href: "/chat", badge: unreadMessages > 0 ? String(unreadMessages > 99 ? "99+" : unreadMessages) : undefined },
+  { icon: Bell, label: "Notificaciones", href: "/notifications", badge: unreadNotifications > 0 ? String(unreadNotifications > 99 ? "99+" : unreadNotifications) : undefined },
   { icon: BarChart2, label: "Analytics", href: "/analytics" },
   { icon: Settings, label: "Ajustes", href: "/settings" },
 ];

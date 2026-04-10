@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Search, Shield, CalendarDays, Users, DollarSign, CheckCircle2, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { mockCampaigns, type MockCampaign } from "@/lib/mockData";
+import { mockCampaigns, mockBrands, type MockCampaign } from "@/lib/mockData";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -77,6 +77,7 @@ function CampaignCard({ campaign }: { campaign: MockCampaign }) {
   const [applied, setApplied] = useState(false);
   const days = daysUntil(campaign.deadline);
   const progress = Math.min(100, Math.round((campaign.creatorsApplied / campaign.creatorsNeeded) * 100));
+  const brandUsername = mockBrands.find((b) => b.id === campaign.brandId)?.username ?? null;
 
   return (
     <article className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-4 hover:border-white/20 transition-colors">
@@ -202,13 +203,15 @@ function CampaignCard({ campaign }: { campaign: MockCampaign }) {
             Aplicar a esta campaña
           </button>
         )}
+        {brandUsername && (
         <Link
-          href={`/brand/${campaign.brandId.replace("brand-", "")}`}
+          href={`/brand/${brandUsername}`}
           className="flex items-center justify-center w-11 bg-white/5 border border-white/10 hover:border-white/20 rounded-xl transition-colors"
           title="Ver marca"
         >
           <ExternalLink className="w-4 h-4 text-white/50" />
         </Link>
+        )}
       </div>
     </article>
   );

@@ -40,6 +40,7 @@ export interface MockMessage {
 export interface MockConversation {
   id: string;
   creatorName: string;
+  creatorUsername: string;
   agencyName: string;
   lastMessage: string;
   lastMessageAt: string;
@@ -362,6 +363,7 @@ export const mockConversations: MockConversation[] = [
   {
     id: "conv-001",
     creatorName: "Sofia Ramírez",
+    creatorUsername: "sofiaramirez",
     agencyName: "Stellar Talent Group",
     lastMessage: "Perfecto, quedamos para la llamada el martes a las 3pm.",
     lastMessageAt: "2026-04-08T18:30:00Z",
@@ -402,6 +404,7 @@ export const mockConversations: MockConversation[] = [
   {
     id: "conv-002",
     creatorName: "Diego Torres",
+    creatorUsername: "diegotorres_gamer",
     agencyName: "Nexus Creator Agency",
     lastMessage: "Tenemos una marca de periféricos gaming que quiere trabajar contigo.",
     lastMessageAt: "2026-04-08T14:00:00Z",
@@ -430,6 +433,7 @@ export const mockConversations: MockConversation[] = [
   {
     id: "conv-003",
     creatorName: "Valentina Cruz",
+    creatorUsername: "valentina.cruz",
     agencyName: "ContentFirst Agency",
     lastMessage: "Nos encantó tu contenido de skincare. ¡Somos el equipo perfecto para ti!",
     lastMessageAt: "2026-04-09T08:15:00Z",
@@ -458,6 +462,7 @@ export const mockConversations: MockConversation[] = [
   {
     id: "conv-004",
     creatorName: "Carlos Reyes",
+    creatorUsername: "carlos.reyes.chef",
     agencyName: "Latam Creators Hub",
     lastMessage: "El contrato ya está listo para revisión. ¡Bienvenido al Hub!",
     lastMessageAt: "2026-04-07T20:00:00Z",
@@ -498,6 +503,7 @@ export const mockConversations: MockConversation[] = [
   {
     id: "conv-005",
     creatorName: "Fernanda Jiménez",
+    creatorUsername: "fer.jimenez.fit",
     agencyName: "Pinnacle Talent",
     lastMessage: "Podemos ayudarte a expandir tu presencia más allá de OnlyFans.",
     lastMessageAt: "2026-04-09T10:00:00Z",

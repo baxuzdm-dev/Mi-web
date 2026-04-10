@@ -214,7 +214,7 @@ export default function MessagesPage() {
                 <p className="text-xs text-white/50 truncate">{activeConv.agencyName}</p>
               </div>
               <Link
-                href={`/profile/${activeConv.creatorName.toLowerCase().replace(" ", "")}`}
+                href={`/profile/${activeConv.creatorUsername}`}
                 className="text-xs text-violet-400 hover:text-violet-300 transition-colors shrink-0"
               >
                 Ver perfil

@@ -195,7 +195,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Campaign banner */}
       {post.type === "campaign" && post.campaignRef && (
         <Link
-          href={`/campaigns/${post.campaignRef}`}
+          href="/campaigns"
           className={cn(
             "mt-3.5 flex items-center justify-between",
             "bg-violet-500/10 border border-violet-500/20 rounded-xl px-4 py-2.5",
