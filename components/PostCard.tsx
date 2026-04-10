@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MessageCircle, Share2, Bookmark, ShieldCheck, Flame } from "lucide-react";
+import {
+  MessageCircle,
+  Share2,
+  Bookmark,
+  ShieldCheck,
+  Flame,
+} from "lucide-react";
 import { cn, formatNumber } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface PostCardProps {
   post: {
@@ -30,7 +35,7 @@ function timeAgoEs(date: string): string {
   if (diff < 3600) return `hace ${Math.floor(diff / 60)}m`;
   if (diff < 86400) return `hace ${Math.floor(diff / 3600)}h`;
   if (diff < 2592000) return `hace ${Math.floor(diff / 86400)}d`;
-  return `hace ${Math.floor(diff / 2592000)}mes`;
+  return `hace ${Math.floor(diff / 2592000)} mes`;
 }
 
 const ROLE_BADGE: Record<
@@ -39,19 +44,22 @@ const ROLE_BADGE: Record<
 > = {
   CREATOR: {
     label: "Creador",
-    className: "bg-violet-500/20 text-violet-300 border border-violet-500/30",
+    className:
+      "bg-violet-500/20 text-violet-300 border border-violet-500/30",
   },
   AGENCY: {
     label: "Agencia",
-    className: "bg-pink-500/20 text-pink-300 border border-pink-500/30",
+    className:
+      "bg-pink-500/20 text-pink-300 border border-pink-500/30",
   },
   BRAND: {
     label: "Marca",
-    className: "bg-orange-500/20 text-orange-300 border border-orange-500/30",
+    className:
+      "bg-orange-500/20 text-orange-300 border border-orange-500/30",
   },
 };
 
-function AuthorInitials({ name }: { name: string }) {
+function AuthorAvatar({ name }: { name: string }) {
   const initials = name
     .split(" ")
     .map((w) => w[0])
@@ -60,9 +68,41 @@ function AuthorInitials({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-white text-sm font-bold shrink-0 select-none">
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-white text-sm font-bold shrink-0 select-none ring-2 ring-white/5">
       {initials}
     </div>
+  );
+}
+
+function ActionButton({
+  icon,
+  label,
+  count,
+  active = false,
+  activeClass = "text-violet-400",
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+  active?: boolean;
+  activeClass?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+        active
+          ? cn(activeClass, "bg-white/5")
+          : "text-white/40 hover:text-white/70 hover:bg-white/5"
+      )}
+    >
+      {icon}
+      <span>{formatNumber(count)}</span>
+      <span className="hidden sm:inline text-white/30">{label}</span>
+    </button>
   );
 }
 
@@ -97,7 +137,7 @@ export default function PostCard({ post }: PostCardProps) {
       {/* Header */}
       <div className="flex items-start gap-3">
         <Link href={`/profile/${post.authorUsername}`} className="shrink-0">
-          <AuthorInitials name={post.authorName} />
+          <AuthorAvatar name={post.authorName} />
         </Link>
 
         <div className="flex-1 min-w-0">
@@ -121,9 +161,13 @@ export default function PostCard({ post }: PostCardProps) {
             </span>
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-xs text-white/40">@{post.authorUsername}</span>
+            <span className="text-xs text-white/40">
+              @{post.authorUsername}
+            </span>
             <span className="text-white/20 text-xs">·</span>
-            <span className="text-xs text-white/40">{timeAgoEs(post.createdAt)}</span>
+            <span className="text-xs text-white/40">
+              {timeAgoEs(post.createdAt)}
+            </span>
           </div>
         </div>
       </div>
@@ -138,11 +182,11 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* Optional image */}
       {post.image && (
-        <div className="mt-3 overflow-hidden rounded-xl">
+        <div className="mt-3 overflow-hidden rounded-xl border border-white/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.image}
-            alt="Post image"
+            alt="Imagen del post"
             className="w-full max-h-64 object-cover"
           />
         </div>
@@ -158,7 +202,12 @@ export default function PostCard({ post }: PostCardProps) {
             "hover:bg-violet-500/15 transition-colors group"
           )}
         >
-          <span className="text-sm text-violet-300 font-medium">Campaña vinculada</span>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-sm text-violet-300 font-medium">
+              Campaña vinculada
+            </span>
+          </div>
           <span className="text-xs text-violet-400 group-hover:translate-x-0.5 transition-transform">
             Ver campaña →
           </span>
@@ -166,9 +215,16 @@ export default function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Action bar */}
-      <div className="mt-4 flex items-center gap-1 border-t border-white/5 pt-3.5">
+      <div className="mt-4 flex items-center gap-0.5 border-t border-white/5 pt-3.5">
         <ActionButton
-          icon={<Flame className="w-4 h-4" />}
+          icon={
+            <Flame
+              className={cn(
+                "w-4 h-4 transition-colors",
+                liked ? "fill-orange-400 text-orange-400" : ""
+              )}
+            />
+          }
           label="Me inspira"
           count={likeCount}
           active={liked}
@@ -188,51 +244,23 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="ml-auto">
           <button
             onClick={() => setSaved((v) => !v)}
+            aria-label="Guardar"
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
               saved
-                ? "text-violet-400"
+                ? "text-violet-400 bg-violet-500/10"
                 : "text-white/40 hover:text-white/70 hover:bg-white/5"
             )}
-            aria-label="Guardar"
           >
-            <Bookmark className={cn("w-4 h-4", saved && "fill-violet-400")} />
-            <span className="hidden sm:inline">Guardar</span>
+            <Bookmark
+              className={cn("w-4 h-4", saved && "fill-violet-400")}
+            />
+            <span className="hidden sm:inline">
+              {saved ? "Guardado" : "Guardar"}
+            </span>
           </button>
         </div>
       </div>
     </article>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-  count,
-  active = false,
-  activeClass = "text-violet-400",
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  count: number;
-  active?: boolean;
-  activeClass?: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all duration-200",
-        active
-          ? activeClass
-          : "text-white/40 hover:text-white/70 hover:bg-white/5"
-      )}
-    >
-      {icon}
-      <span>{formatNumber(count)}</span>
-      <span className="hidden sm:inline">{label}</span>
-    </button>
   );
 }

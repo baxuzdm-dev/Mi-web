@@ -23,7 +23,7 @@ interface CampaignCardProps {
   showApply?: boolean;
 }
 
-function BrandInitials({ name }: { name: string }) {
+function BrandAvatar({ name }: { name: string }) {
   const initials = name
     .split(" ")
     .map((w) => w[0])
@@ -32,32 +32,67 @@ function BrandInitials({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-600 to-rose-700 flex items-center justify-center text-white text-sm font-bold shrink-0 select-none">
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-600 to-rose-700 flex items-center justify-center text-white text-sm font-bold shrink-0 select-none ring-2 ring-white/5">
       {initials}
     </div>
   );
 }
 
-function deadlineCountdown(deadline: string): string {
+function deadlineCountdown(deadline: string): { label: string; urgent: boolean } {
   const diff = new Date(deadline).getTime() - Date.now();
-  if (diff <= 0) return "Expirada";
+  if (diff <= 0) return { label: "Expirada", urgent: true };
   const days = Math.floor(diff / 86400000);
-  if (days === 0) return "Hoy";
-  if (days === 1) return "1 día";
-  return `${days} días`;
+  const urgent = days <= 3;
+  if (days === 0) return { label: "Hoy", urgent: true };
+  if (days === 1) return { label: "1 día", urgent: true };
+  return { label: `${days} días`, urgent };
 }
 
-export default function CampaignCard({ campaign, showApply = true }: CampaignCardProps) {
+function StatPill({
+  icon,
+  label,
+  value,
+  accent = "default",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  accent?: "violet" | "emerald" | "red" | "default";
+}) {
+  const accentMap: Record<string, string> = {
+    violet: "text-violet-400",
+    emerald: "text-emerald-400",
+    red: "text-red-400",
+    default: "text-white",
+  };
+
+  return (
+    <div className="bg-white/[0.04] border border-white/8 rounded-xl p-2.5 flex flex-col gap-1">
+      <div className={cn("flex items-center gap-1 text-white/40", accentMap[accent])}>
+        {icon}
+      </div>
+      <p className={cn("text-sm font-semibold leading-none", accentMap[accent])}>
+        {value}
+      </p>
+      <p className="text-[10px] text-white/30 leading-none">{label}</p>
+    </div>
+  );
+}
+
+export default function CampaignCard({
+  campaign,
+  showApply = true,
+}: CampaignCardProps) {
   const progress = Math.min(
     (campaign.creatorsApplied / campaign.creatorsNeeded) * 100,
     100
   );
-  const spotsLeft = Math.max(campaign.creatorsNeeded - campaign.creatorsApplied, 0);
+  const spotsLeft = Math.max(
+    campaign.creatorsNeeded - campaign.creatorsApplied,
+    0
+  );
   const isFull = spotsLeft === 0;
-  const countdown = deadlineCountdown(campaign.deadline);
-  const isUrgent =
-    !isFull &&
-    new Date(campaign.deadline).getTime() - Date.now() < 3 * 86400000;
+  const { label: countdownLabel, urgent } = deadlineCountdown(campaign.deadline);
 
   return (
     <article
@@ -68,7 +103,7 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
     >
       {/* Header */}
       <div className="flex items-start gap-3">
-        <BrandInitials name={campaign.brandName} />
+        <BrandAvatar name={campaign.brandName} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-white truncate">
@@ -109,8 +144,8 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
         <StatPill
           icon={<Clock className="w-3 h-3" />}
           label="plazo"
-          value={countdown}
-          accent={isUrgent ? "red" : "default"}
+          value={countdownLabel}
+          accent={urgent ? "red" : "default"}
         />
       </div>
 
@@ -120,7 +155,9 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
           <div className="flex items-center gap-1.5 text-white/50">
             <TrendingUp className="w-3 h-3" />
             <span>
-              <span className="text-white font-medium">{campaign.creatorsApplied}</span>
+              <span className="text-white font-medium">
+                {campaign.creatorsApplied}
+              </span>
               /{campaign.creatorsNeeded} creadores
             </span>
           </div>
@@ -130,7 +167,7 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
               isFull ? "text-emerald-400" : "text-white/50"
             )}
           >
-            {isFull ? "Completo ✓" : `${spotsLeft} lugares disponibles`}
+            {isFull ? "Completo ✓" : `${spotsLeft} lugares`}
           </span>
         </div>
 
@@ -149,8 +186,8 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
         </div>
       </div>
 
-      {/* Platform pills */}
-      {campaign.platforms.length > 0 && (
+      {/* Platform + niche pills */}
+      {(campaign.platforms.length > 0 || campaign.niches.length > 0) && (
         <div className="flex flex-wrap gap-1.5">
           {campaign.platforms.map((p) => (
             <span
@@ -184,36 +221,5 @@ export default function CampaignCard({ campaign, showApply = true }: CampaignCar
         </Link>
       )}
     </article>
-  );
-}
-
-function StatPill({
-  icon,
-  label,
-  value,
-  accent = "default",
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  accent?: "violet" | "emerald" | "red" | "default";
-}) {
-  const accentMap: Record<string, string> = {
-    violet: "text-violet-400",
-    emerald: "text-emerald-400",
-    red: "text-red-400",
-    default: "text-white",
-  };
-
-  return (
-    <div className="bg-white/[0.04] border border-white/8 rounded-xl p-2.5 flex flex-col gap-1">
-      <div className={cn("flex items-center gap-1 text-white/40", accentMap[accent])}>
-        {icon}
-      </div>
-      <p className={cn("text-sm font-semibold leading-none", accentMap[accent])}>
-        {value}
-      </p>
-      <p className="text-[10px] text-white/30 leading-none">{label}</p>
-    </div>
   );
 }

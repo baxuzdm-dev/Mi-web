@@ -46,7 +46,10 @@ type IconConfig = {
   text: string;
 };
 
-const TYPE_MAP: Record<NotificationItemProps["notification"]["type"], IconConfig> = {
+const TYPE_MAP: Record<
+  NotificationItemProps["notification"]["type"],
+  IconConfig
+> = {
   message: {
     icon: MessageSquare,
     bg: "bg-violet-500/20",
@@ -106,10 +109,13 @@ export default function NotificationItem({
       className={cn(
         "flex items-start gap-3 py-3 px-4 cursor-pointer",
         "transition-all duration-200 outline-none",
-        "focus-visible:ring-1 focus-visible:ring-violet-500/50",
+        "focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-violet-500/50",
         notification.read
           ? "hover:bg-white/5"
-          : "bg-violet-500/[0.05] border-l-2 border-violet-500 hover:bg-violet-500/[0.08]"
+          : cn(
+              "bg-violet-500/[0.05] border-l-2 border-violet-500",
+              "hover:bg-violet-500/[0.08]"
+            )
       )}
     >
       {/* Icon */}
@@ -128,7 +134,9 @@ export default function NotificationItem({
         <p
           className={cn(
             "text-sm leading-snug",
-            notification.read ? "font-normal text-white/70" : "font-medium text-white"
+            notification.read
+              ? "font-normal text-white/70"
+              : "font-medium text-white"
           )}
         >
           {notification.title}
@@ -139,7 +147,7 @@ export default function NotificationItem({
       </div>
 
       {/* Right: time + unread dot */}
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
+      <div className="flex flex-col items-end gap-1.5 shrink-0 pt-0.5">
         <span className="text-[11px] text-white/30 whitespace-nowrap">
           {timeAgoEs(notification.createdAt)}
         </span>

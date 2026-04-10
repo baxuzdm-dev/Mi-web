@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 interface StatsCardProps {
   label: string;
   value: string | number;
-  change?: number;
+  change?: number; // % change vs last period
   icon: React.ReactNode;
   accent?: "violet" | "pink" | "emerald" | "orange";
 }
@@ -14,21 +14,25 @@ const ACCENT_MAP = {
     bg: "bg-violet-500/20",
     text: "text-violet-400",
     ring: "ring-violet-500/10",
+    bar: "bg-violet-500",
   },
   pink: {
     bg: "bg-pink-500/20",
     text: "text-pink-400",
     ring: "ring-pink-500/10",
+    bar: "bg-pink-500",
   },
   emerald: {
     bg: "bg-emerald-500/20",
     text: "text-emerald-400",
     ring: "ring-emerald-500/10",
+    bar: "bg-emerald-500",
   },
   orange: {
     bg: "bg-orange-500/20",
     text: "text-orange-400",
     ring: "ring-orange-500/10",
+    bar: "bg-orange-500",
   },
 } as const;
 
@@ -40,8 +44,8 @@ export default function StatsCard({
   accent = "violet",
 }: StatsCardProps) {
   const colors = ACCENT_MAP[accent];
-  const isPositive = change !== undefined && change >= 0;
-  const isNeutral = change === undefined;
+  const hasChange = change !== undefined;
+  const isPositive = hasChange && change >= 0;
 
   return (
     <div
@@ -50,8 +54,8 @@ export default function StatsCard({
         "hover:border-violet-500/30 hover:bg-white/[0.07] transition-all duration-200"
       )}
     >
+      {/* Icon row */}
       <div className="flex items-start justify-between gap-3">
-        {/* Icon */}
         <div
           className={cn(
             "w-11 h-11 rounded-xl flex items-center justify-center shrink-0",
@@ -65,7 +69,7 @@ export default function StatsCard({
         </div>
 
         {/* Change badge */}
-        {!isNeutral && (
+        {hasChange && (
           <div
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
@@ -85,17 +89,20 @@ export default function StatsCard({
         )}
       </div>
 
-      {/* Value */}
+      {/* Value + label */}
       <div className="mt-4 space-y-1">
         <p className="text-3xl font-bold text-white tracking-tight leading-none">
           {typeof value === "number" ? value.toLocaleString("es-MX") : value}
         </p>
-        <p className="text-sm text-white/50">{label}</p>
+        <p className="text-sm text-white/50 mt-1">{label}</p>
       </div>
 
-      {/* Subtle accent bar */}
+      {/* Accent bar */}
       <div
-        className={cn("mt-4 h-0.5 w-full rounded-full opacity-30", colors.bg)}
+        className={cn(
+          "mt-4 h-0.5 w-full rounded-full opacity-30",
+          colors.bar
+        )}
       />
     </div>
   );
