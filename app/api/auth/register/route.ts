@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { createUser } from "@/lib/demoUsers";
 
 const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
+  name:     z.string().min(2),
+  email:    z.string().email(),
   password: z.string().min(8),
-  role: z.enum(["CREATOR", "AGENCY"]),
+  role:     z.enum(["CREATOR", "AGENCY", "BRAND"]),
 });
 
 export async function POST(req: Request) {
@@ -15,23 +14,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, email, password, role } = schema.parse(body);
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "Email already in use" }, { status: 400 });
-    }
-
-    const hashed = await bcrypt.hash(password, 12);
-
-    const user = await prisma.user.create({
-      data: { name, email, password: hashed, role },
-    });
-
+    const user = await createUser({ name, email, password, role });
     return NextResponse.json({ id: user.id, email: user.email, role: user.role }, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.issues }, { status: 422 });
+      return NextResponse.json({ error: err.issues[0]?.message ?? "Datos inválidos" }, { status: 422 });
     }
-    console.error("[register] unexpected error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (err instanceof Error && err.message === "Email already in use") {
+      return NextResponse.json({ error: "Este correo ya está registrado" }, { status: 400 });
+    }
+    console.error("[register]", err);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

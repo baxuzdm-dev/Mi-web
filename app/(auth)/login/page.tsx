@@ -31,8 +31,10 @@ export default function LoginPage() {
       setError(t("login.error"));
     } else {
       const session = await getSession();
-      if (session?.user?.role === "CREATOR") router.push("/creator");
-      else if (session?.user?.role === "AGENCY") router.push("/agency");
+      const role = session?.user?.role;
+      if (role === "CREATOR") router.push("/creator");
+      else if (role === "AGENCY") router.push("/agency");
+      else if (role === "BRAND") router.push("/dashboard");
       else router.push("/onboarding");
     }
   }
@@ -53,6 +55,27 @@ export default function LoginPage() {
           </Link>
           <h1 className="text-2xl font-bold text-white mt-6 mb-2">{t("login.welcome")}</h1>
           <p className="text-white/50">{t("login.sub")}</p>
+        </div>
+
+        {/* Demo credentials */}
+        <div className="mb-4 p-4 rounded-xl border border-violet-500/20 bg-violet-500/5 text-xs space-y-1.5">
+          <p className="text-violet-300 font-semibold mb-2">Cuentas de demo</p>
+          {[
+            { label: "Creador", email: "creator@demo.com" },
+            { label: "Agencia", email: "agency@demo.com" },
+            { label: "Marca",   email: "brand@demo.com" },
+          ].map(({ label, email: demoEmail }) => (
+            <button
+              key={demoEmail}
+              type="button"
+              onClick={() => { setEmail(demoEmail); setPassword("demo1234"); }}
+              className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+            >
+              <span className="font-medium">{label}</span>
+              <span className="text-white/40 font-mono">{demoEmail}</span>
+            </button>
+          ))}
+          <p className="text-white/30 pt-1">Contraseña: <span className="font-mono text-white/50">demo1234</span></p>
         </div>
 
         <div className="p-8 rounded-2xl border border-white/10 bg-white/4 backdrop-blur-sm">

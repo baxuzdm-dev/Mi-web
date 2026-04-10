@@ -47,13 +47,11 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
 
-    const apiRole = role === "BRAND" ? "CREATOR" : role; // map BRAND to CREATOR for now
-
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: apiRole }),
+        body: JSON.stringify({ name, email, password, role }),
       });
 
       const data = await res.json();
