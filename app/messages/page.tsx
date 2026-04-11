@@ -14,23 +14,18 @@ import Link from "next/link";
 import { mockConversations, MockConversation, MockMessage } from "@/lib/mockData";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
-
 function formatTime(iso: string) {
   const d = new Date(iso);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
-  if (diffDays === 0) return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 0)
+    return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   if (diffDays === 1) return "Ayer";
   return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
 }
 
 function getInitials(name: string) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
 }
 
 const GRADIENTS = [
@@ -40,45 +35,36 @@ const GRADIENTS = [
   "from-emerald-500 to-teal-500",
   "from-orange-500 to-pink-500",
 ];
-
 function gradient(idx: number) {
   return GRADIENTS[idx % GRADIENTS.length];
 }
 
-/* ─── types ───────────────────────────────────────────────────── */
 type Tab = "Todo" | "No leído" | "Propuestas";
 
 /* ═══════════════════════════════════════════════════════════════ */
 export default function MessagesPage() {
-  // Mutable copy of conversations so we can append messages
-  const [conversations, setConversations] = useState<MockConversation[]>(
-    () => mockConversations.map((c) => ({ ...c, messages: [...c.messages] }))
+  // Mutable sidebar list (update unreadCount & lastMessage)
+  const [convList, setConvList] = useState<MockConversation[]>(() =>
+    mockConversations.map((c) => ({ ...c, messages: [...c.messages] }))
   );
 
-  const [activeConvId, setActiveConvId] = useState<string>(conversations[0]?.id ?? "");
+  // Active conversation stored as full object — no find() needed
+  const [activeConv, setActiveConv] = useState<MockConversation | null>(() =>
+    convList.length > 0 ? { ...convList[0] } : null
+  );
+
   const [tab, setTab] = useState<Tab>("Todo");
   const [search, setSearch] = useState("");
   const [inputText, setInputText] = useState("");
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
-
-  // Auto-scroll to bottom when active conversation or its messages change
+  // Scroll to bottom whenever active conversation or its messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeConvId, activeConv?.messages.length]);
+  }, [activeConv?.id, activeConv?.messages.length]);
 
-  // Mark as read when opening a conversation
-  useEffect(() => {
-    if (!activeConvId) return;
-    setConversations((prev) =>
-      prev.map((c) => (c.id === activeConvId ? { ...c, unreadCount: 0 } : c))
-    );
-  }, [activeConvId]);
-
-  const filtered = conversations.filter((c) => {
+  const filtered = convList.filter((c) => {
     if (search) {
       const q = search.toLowerCase();
       if (
@@ -93,9 +79,18 @@ export default function MessagesPage() {
     return true;
   });
 
-  const handleSend = () => {
+  function selectConv(conv: MockConversation) {
+    const updated = { ...conv, unreadCount: 0 };
+    setActiveConv(updated);
+    setConvList((prev) =>
+      prev.map((c) => (c.id === conv.id ? updated : c))
+    );
+    inputRef.current?.focus();
+  }
+
+  function handleSend() {
     const text = inputText.trim();
-    if (!text || !activeConvId) return;
+    if (!text || !activeConv) return;
 
     const newMsg: MockMessage = {
       id: `msg-${Date.now()}`,
@@ -104,25 +99,23 @@ export default function MessagesPage() {
       createdAt: new Date().toISOString(),
     };
 
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeConvId
-          ? {
-              ...c,
-              messages: [...c.messages, newMsg],
-              lastMessage: text,
-              lastMessageAt: newMsg.createdAt,
-            }
-          : c
-      )
-    );
+    const updated: MockConversation = {
+      ...activeConv,
+      messages: [...activeConv.messages, newMsg],
+      lastMessage: text,
+      lastMessageAt: newMsg.createdAt,
+    };
 
+    setActiveConv(updated);
+    setConvList((prev) =>
+      prev.map((c) => (c.id === activeConv.id ? updated : c))
+    );
     setInputText("");
     inputRef.current?.focus();
-  };
+  }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-[#0a0a0f]">
+    <div className="flex overflow-hidden bg-[#0a0a0f]" style={{ height: "calc(100vh - 4rem)" }}>
       {/* ── LEFT PANEL ──────────────────────────────────────────── */}
       <aside className="w-80 shrink-0 border-r border-white/10 flex flex-col">
         {/* Header */}
@@ -172,19 +165,18 @@ export default function MessagesPage() {
             </div>
           ) : (
             filtered.map((conv, idx) => {
-              const isActive = activeConvId === conv.id;
+              const isActive = activeConv?.id === conv.id;
               const isProposal = conv.id === "conv-002";
               return (
                 <button
                   key={conv.id}
-                  onClick={() => setActiveConvId(conv.id)}
+                  onClick={() => selectConv(conv)}
                   className={`w-full text-left p-3 flex gap-3 transition-all border-r-2 ${
                     isActive
                       ? "bg-violet-600/10 border-r-violet-500"
                       : "border-r-transparent hover:bg-white/5"
                   }`}
                 >
-                  {/* Avatar */}
                   <div className="relative shrink-0">
                     <div
                       className={`w-11 h-11 rounded-full bg-gradient-to-br ${gradient(idx)} flex items-center justify-center text-sm font-bold text-white`}
@@ -198,7 +190,6 @@ export default function MessagesPage() {
                     )}
                   </div>
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
                       <span className="text-sm font-medium text-white truncate">
@@ -229,7 +220,6 @@ export default function MessagesPage() {
       {/* ── RIGHT PANEL ─────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
         {!activeConv ? (
-          /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-white/40">
             <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
               <MessageSquare size={28} />
@@ -242,12 +232,12 @@ export default function MessagesPage() {
         ) : (
           <>
             {/* Conversation header */}
-            <div className="p-4 border-b border-white/10 flex items-center gap-3">
+            <div className="p-4 border-b border-white/10 flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
                 {getInitials(activeConv.creatorName)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-white">{activeConv.creatorName}</span>
                   <span className="text-[10px] bg-violet-500/20 text-violet-300 border border-violet-500/30 rounded-full px-2 py-0.5 font-medium">
                     Creador
@@ -267,39 +257,44 @@ export default function MessagesPage() {
               </Link>
             </div>
 
-            {/* Messages */}
+            {/* Messages area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {activeConv.messages.map((msg) => {
-                const isMine = msg.senderId === "creator-001";
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[72%] ${isMine ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                      <div
-                        className={`px-4 py-2.5 text-sm leading-relaxed ${
-                          isMine
-                            ? "bg-violet-600 text-white rounded-2xl rounded-tr-sm"
-                            : "bg-white/10 text-white rounded-2xl rounded-tl-sm"
-                        }`}
-                      >
-                        {msg.content}
-                      </div>
-                      <div className={`flex items-center gap-1 text-[10px] text-white/40 ${isMine ? "flex-row-reverse" : ""}`}>
-                        <span>{formatTime(msg.createdAt)}</span>
-                        {isMine && <CheckCheck size={12} className="text-violet-400" />}
+              {activeConv.messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-white/30 text-sm">
+                  No hay mensajes aún. ¡Sé el primero en escribir!
+                </div>
+              ) : (
+                activeConv.messages.map((msg) => {
+                  const isMine = msg.senderId === "creator-001";
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`max-w-[72%] flex flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
+                        <div
+                          className={`px-4 py-2.5 text-sm leading-relaxed break-words ${
+                            isMine
+                              ? "bg-violet-600 text-white rounded-2xl rounded-tr-sm"
+                              : "bg-white/10 text-white rounded-2xl rounded-tl-sm"
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                        <div className={`flex items-center gap-1 text-[10px] text-white/40 ${isMine ? "flex-row-reverse" : ""}`}>
+                          <span>{formatTime(msg.createdAt)}</span>
+                          {isMine && <CheckCheck size={12} className="text-violet-400" />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-              {/* Scroll anchor */}
+                  );
+                })
+              )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Input area */}
-            <div className="border-t border-white/10 p-4">
+            <div className="border-t border-white/10 p-4 shrink-0">
               <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus-within:border-violet-500/50 transition-colors">
                 <button className="p-1.5 text-white/40 hover:text-white/70 transition-colors shrink-0">
                   <Smile size={18} />
