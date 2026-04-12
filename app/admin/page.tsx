@@ -5,12 +5,13 @@ import {
   LayoutDashboard, Users, Building2, Megaphone, MessageSquare,
   Settings, LogOut, Plus, Edit2, Trash2, Search, Shield,
   Eye, EyeOff, Save, X, Check, RefreshCw, AlertTriangle,
-  ChevronRight, Star, TrendingUp, DollarSign, Globe,
+  ChevronRight, Star, TrendingUp, DollarSign, Globe, UserCog,
+  KeyRound, Mail,
 } from "lucide-react";
 import { mockConversations } from "@/lib/mockData";
 
 /* ─────────────────────────── types ──────────────────────────── */
-type Tab = "dashboard" | "creators" | "agencies" | "campaigns" | "messages" | "settings";
+type Tab = "dashboard" | "creators" | "agencies" | "campaigns" | "messages" | "users" | "settings";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
@@ -69,6 +70,7 @@ export default function AdminPage() {
         {tab === "agencies"  && <EntityTab entity="agencies"  authed={authed} config={agencyConfig}   />}
         {tab === "campaigns" && <EntityTab entity="campaigns" authed={authed} config={campaignConfig} />}
         {tab === "messages"  && <MessagesTab />}
+        {tab === "users"     && <UsersTab />}
         {tab === "settings"  && <SettingsTab />}
       </main>
     </div>
@@ -161,6 +163,7 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "agencies",  label: "Agencias",     icon: <Building2 size={18} /> },
   { id: "campaigns", label: "Campañas",     icon: <Megaphone size={18} /> },
   { id: "messages",  label: "Mensajes",     icon: <MessageSquare size={18} /> },
+  { id: "users",     label: "Usuarios",     icon: <UserCog size={18} /> },
   { id: "settings",  label: "Configuración",icon: <Settings size={18} /> },
 ];
 
@@ -699,6 +702,278 @@ function MessagesTab() {
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════ USERS TAB ══════════════════════ */
+interface AdminUser { id: string; name: string; email: string; role: string; }
+
+function UsersTab() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editUser, setEditUser] = useState<AdminUser | null>(null);
+  const [isNew, setIsNew] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
+  const [search, setSearch] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const r = await fetch("/api/admin/users");
+    if (r.ok) setUsers(await r.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
+
+  const filtered = users.filter(
+    (u) => u.name.toLowerCase().includes(search.toLowerCase()) ||
+           u.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const roleBadge = (role: string) => {
+    const map: Record<string, string> = {
+      CREATOR: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+      AGENCY:  "bg-pink-500/20 text-pink-300 border-pink-500/30",
+      BRAND:   "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    };
+    return (
+      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${map[role] ?? "bg-white/10 text-white/50 border-white/10"}`}>
+        {role}
+      </span>
+    );
+  };
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Usuarios</h2>
+          <p className="text-white/50 text-sm mt-1">{users.length} cuentas registradas</p>
+        </div>
+        <button
+          onClick={() => { setEditUser({ id: "", name: "", email: "", role: "CREATOR" }); setIsNew(true); }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold rounded-xl hover:from-violet-500 hover:to-pink-500 transition-all"
+        >
+          <Plus size={16} /> Nuevo usuario
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre o email..."
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors" />
+      </div>
+
+      {/* Table */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-40 text-white/40">
+            <RefreshCw size={20} className="animate-spin mr-2" /> Cargando...
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/10">
+                {["Nombre", "Email", "Rol", "Acciones"].map((h) => (
+                  <th key={h} className={`px-4 py-3 text-xs font-semibold text-white/40 uppercase tracking-wide ${h === "Acciones" ? "text-right" : "text-left"}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u) => (
+                <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        {u.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="text-sm text-white font-medium">{u.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-white/70 font-mono">{u.email}</span>
+                  </td>
+                  <td className="px-4 py-3">{roleBadge(u.role)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => { setEditUser({ ...u }); setIsNew(false); }}
+                        className="p-1.5 text-white/40 hover:text-violet-400 hover:bg-violet-500/10 rounded-lg transition-colors" title="Editar">
+                        <Edit2 size={15} />
+                      </button>
+                      <button onClick={() => setDeleteId(u.id)}
+                        className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" title="Eliminar">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Edit / Create modal */}
+      {editUser && (
+        <UserModal
+          user={editUser}
+          isNew={isNew}
+          onClose={() => { setEditUser(null); setIsNew(false); }}
+          onSave={async (data) => {
+            const method = isNew ? "POST" : "PUT";
+            const r = await fetch("/api/admin/users", {
+              method,
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(isNew ? data : { id: editUser.id, ...data }),
+            });
+            if (r.ok) {
+              await load();
+              setEditUser(null);
+              setIsNew(false);
+              showToast(isNew ? "Usuario creado" : "Usuario actualizado");
+            } else {
+              const err = await r.json();
+              alert(err.error ?? "Error al guardar");
+            }
+          }}
+        />
+      )}
+
+      {/* Delete confirm */}
+      {deleteId && (
+        <ConfirmModal
+          message="¿Eliminar este usuario? Perderá acceso a la plataforma."
+          onConfirm={async () => {
+            await fetch("/api/admin/users", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: deleteId }),
+            });
+            await load();
+            setDeleteId(null);
+            showToast("Usuario eliminado");
+          }}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-emerald-600 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-lg z-[200]">
+          <Check size={16} /> {toast}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface UserModalProps {
+  user: AdminUser;
+  isNew: boolean;
+  onClose: () => void;
+  onSave: (data: { name: string; email: string; password: string; role: string }) => Promise<void>;
+}
+
+function UserModal({ user, isNew, onClose, onSave }: UserModalProps) {
+  const [name, setName]         = useState(user.name);
+  const [email, setEmail]       = useState(user.email);
+  const [password, setPassword] = useState("");
+  const [role, setRole]         = useState(user.role || "CREATOR");
+  const [showPass, setShowPass] = useState(false);
+  const [saving, setSaving]     = useState(false);
+
+  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500 transition-colors";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email) return;
+    if (isNew && !password) return;
+    setSaving(true);
+    await onSave({ name, email, password, role });
+    setSaving(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-[#12121f] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <h3 className="font-semibold text-white">{isNew ? "Nuevo usuario" : "Editar usuario"}</h3>
+          <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-medium text-white/60 mb-1.5">Nombre completo</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre del usuario" required className={inputClass} />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-medium text-white/60 mb-1.5 flex items-center gap-1.5">
+              <Mail size={12} /> Email
+            </label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@ejemplo.com" required className={inputClass} />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-medium text-white/60 mb-1.5 flex items-center gap-1.5">
+              <KeyRound size={12} /> Contraseña {!isNew && <span className="text-white/30">(dejar vacío para no cambiar)</span>}
+            </label>
+            <div className="relative">
+              <input
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isNew ? "Mínimo 6 caracteres" : "Nueva contraseña (opcional)"}
+                required={isNew}
+                minLength={isNew ? 6 : undefined}
+                className={`${inputClass} pr-12`}
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-xs font-medium text-white/60 mb-1.5">Rol</label>
+            <div className="flex gap-2">
+              {(["CREATOR", "AGENCY", "BRAND"] as const).map((r) => (
+                <button key={r} type="button" onClick={() => setRole(r)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                    role === r
+                      ? "bg-violet-600/30 border-violet-500 text-violet-300"
+                      : "bg-white/5 border-white/10 text-white/50 hover:text-white"
+                  }`}>
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:from-violet-500 hover:to-pink-500 disabled:opacity-50 transition-all">
+              <Save size={15} />
+              {saving ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -205,6 +205,7 @@ function GlobalSearch() {
 export default function Navbar() {
   const { data: session } = useSession();
   const { t, lang, setLang } = useLang();
+  const { unreadCount } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const role = session?.user?.role;
@@ -262,9 +263,14 @@ export default function Navbar() {
 
             {session ? (
               <>
-                <Button asChild variant="ghost" size="icon" className="hidden md:flex">
-                  <Link href="/chat" aria-label={t("nav.messages")}>
+                <Button asChild variant="ghost" size="icon" className="hidden md:flex relative">
+                  <Link href="/messages" aria-label={t("nav.messages")}>
                     <MessageSquare className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-violet-600 rounded-full text-[10px] font-bold text-white flex items-center justify-center leading-none">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 </Button>
                 <Button asChild variant="ghost" size="icon" className="hidden md:flex">
@@ -347,7 +353,7 @@ export default function Navbar() {
           {session ? (
             <>
               <Button asChild variant="ghost" className="w-full justify-start gap-2">
-                <Link href="/chat" onClick={() => setMenuOpen(false)}>
+                <Link href="/messages" onClick={() => setMenuOpen(false)}>
                   <MessageSquare className="w-4 h-4" /> {t("nav.messages")}
                 </Link>
               </Button>
