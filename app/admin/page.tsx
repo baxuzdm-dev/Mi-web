@@ -873,8 +873,6 @@ const statusBadge = (v: Row) => {
   return <span className={`text-[11px] rounded-full px-2 py-0.5 border border-white/10 ${map[v.status] ?? ""}`}>{v.status}</span>;
 };
 
-const NICHES = ["Lifestyle", "Travel", "Gaming", "Beauty", "Fitness", "Tech", "Food", "Music", "Fashion", "OnlyFans", "Sports", "Comedy"];
-const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter", "OnlyFans", "Twitch", "Snapchat"];
 const COUNTRIES = ["México", "Colombia", "Argentina", "España", "Venezuela", "Chile", "Perú", "Estados Unidos", "Brasil"];
 const SERVICES = ["Talent Management", "Brand Deals", "Content Strategy", "Legal Support", "Analytics", "Social Media", "PR", "Events"];
 
