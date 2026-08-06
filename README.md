@@ -1,5 +1,7 @@
 # Clip Engine Ultra — real one-click pipeline
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fbaxuzdm-dev%2FMi-web%2Ftree%2Fclip-engine-ultra-real)
+
 This branch contains the deployable Docker build for Clip Engine Ultra.
 
 ## Real workflow
@@ -10,7 +12,7 @@ No fake clip cards are returned: results appear only after each MP4 exists and p
 
 ## Deploy on Render
 
-Use the included `render.yaml` Blueprint. The service requires persistent storage at `/data`, health path `/healthz`, and at least 2 vCPU / 4 GB RAM.
+Press **Deploy to Render** above. The included `render.yaml` creates a Docker web service with persistent storage at `/data`, health path `/healthz`, and the resources needed for local transcription and rendering.
 
 ## YouTube source access
 
