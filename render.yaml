@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: clip-engine-ultra
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: CLIP_ENGINE_DATA_ROOT
+        value: /data/clip-engine
+      - key: WHISPER_MODEL
+        value: base
+      - key: MAX_SOURCE_MINUTES
+        value: "90"
+      - key: OUTPUT_WIDTH
+        value: "540"
+      - key: OUTPUT_HEIGHT
+        value: "960"
+    disk:
+      name: clip-engine-data
+      mountPath: /data
+      sizeGB: 20

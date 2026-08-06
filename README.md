@@ -1,132 +1,22 @@
-# FanConnect
+# Clip Engine Ultra — real one-click pipeline
 
-A premium marketplace connecting content creators (OnlyFans, Fansly, etc.) with management agencies.
+This branch contains the deployable Docker build for Clip Engine Ultra.
 
-## Tech Stack
+## Real workflow
 
-- **Frontend**: Next.js 14 (App Router) + TypeScript
-- **Styling**: TailwindCSS (dark mode, custom design system)
-- **Database**: PostgreSQL + Prisma ORM
-- **Auth**: NextAuth.js (credentials + Google OAuth)
-- **Real-time**: Pusher (chat messages)
-- **Deployment**: Vercel-ready
+Paste one authorized video URL and click once. The server performs real ingestion, FFprobe validation, faster-whisper transcription, automatic highlight ranking, face-aware 9:16 reframing, burned ASS captions, and H.264/AAC MP4 exports.
 
-## Features
+No fake clip cards are returned: results appear only after each MP4 exists and passes FFprobe.
 
-- **Two roles**: Content Creator & Agency
-- **Explore pages**: Browse & filter creators / agencies
-- **Application system**: Creators apply to agencies, agencies accept/reject
-- **Match → Chat**: When accepted, a real-time chat channel unlocks
-- **Verified badges**: Trust indicators on profiles
-- **Dark mode**: Premium dark UI (Stripe / Linear inspired)
-- **Responsive**: Works on mobile and desktop
+## Deploy on Render
 
----
+Use the included `render.yaml` Blueprint. The service requires persistent storage at `/data`, health path `/healthz`, and at least 2 vCPU / 4 GB RAM.
 
-## Getting Started
+## YouTube source access
 
-### Prerequisites
+The image includes a current Proof-of-Origin token provider and accepts an optional private `YOUTUBE_COOKIES_B64` server secret for content the owner has authorized. YouTube can still block data-center IPs or demand an authenticated session for some videos; the app reports that failure honestly instead of fabricating clips.
 
-- Node.js 18+
-- PostgreSQL database
-- (Optional) Pusher account for real-time chat
-- (Optional) Google OAuth credentials
+## Packaged source integrity
 
-### 1. Install
-
-```bash
-npm install
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-Fill in your `.env`:
-
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `NEXTAUTH_SECRET` | Random secret (`openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | Your app URL (e.g. `http://localhost:3000`) |
-| `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth secret |
-| `PUSHER_*` | (Optional) Pusher credentials for real-time chat |
-
-### 3. Set Up Database
-
-```bash
-npx prisma generate
-npx prisma migrate dev --name init
-```
-
-### 4. Run
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## Project Structure
-
-```
-/app
-  /(auth)/login          → Sign in page
-  /(auth)/register       → Sign up page (with role selection)
-  /(dashboard)/creator   → Creator dashboard
-  /(dashboard)/agency    → Agency dashboard
-  /explore/creators      → Browse creators with filters
-  /explore/agencies      → Browse agencies with filters
-  /profile/creator/[id]  → Creator public profile + apply
-  /profile/agency/[id]   → Agency public profile + apply
-  /chat                  → Conversation list
-  /chat/[id]             → Real-time chat room
-  /onboarding            → Post-signup profile setup
-  /api/...               → All API routes
-
-/components
-  Navbar.tsx             → Top navigation
-  CreatorCard.tsx        → Creator card for grids
-  AgencyCard.tsx         → Agency card for grids
-  /ui                    → Button, Input, Card, Badge, Avatar, etc.
-
-/lib
-  prisma.ts              → Prisma client singleton
-  auth.ts                → NextAuth config
-  pusher.ts              → Pusher instances
-  utils.ts               → Utility functions
-
-/prisma
-  schema.prisma          → Database schema
-```
-
----
-
-## Deployment (Vercel)
-
-1. Push to GitHub
-2. Connect to [Vercel](https://vercel.com)
-3. Add environment variables in Vercel dashboard
-4. Update `package.json` build script:
-
-```json
-"build": "prisma generate && prisma migrate deploy && next build"
-```
-
----
-
-## Database Schema
-
-```
-User → CreatorProfile (1:1)
-User → AgencyProfile (1:1)
-CreatorProfile + AgencyProfile → Application
-Application (ACCEPTED) → Conversation (1:1)
-Conversation → Message (1:many)
-User ↔ Conversation (many:many)
-```
+- `clip-engine-app.tar.gz`: 26025 bytes
+- SHA-256: `7980e4e2db9f9f87df869bf23a9061c81b68c98b55dd50f0815f84cf1935e5d7`
