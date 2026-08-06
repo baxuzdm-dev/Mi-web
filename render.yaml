@@ -3,7 +3,7 @@ services:
     name: clip-engine-ultra
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: starter
+    plan: standard
     healthCheckPath: /healthz
     autoDeployTrigger: off
     envVars:
