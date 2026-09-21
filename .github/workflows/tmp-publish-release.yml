@@ -1,0 +1,35 @@
+name: Temporary EpicRelease carousel release
+on:
+  push:
+    branches:
+      - tmp-epicrelease-carousel-link-20260921
+    paths:
+      - .github/workflows/tmp-publish-release.yml
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: epicrelease-carousel-temp-20260921
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify carousel
+        shell: bash
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            https://paste.c-net.org/SummaryBenny \
+            --output EpicRelease-Carrusel-Mobile.zip
+          test "$(stat -c%s EpicRelease-Carrusel-Mobile.zip)" = "549572"
+          echo "167f4773b6525c8aa5755d6faab0fe2b4d890ac41233a8c197a25079e24f7982  EpicRelease-Carrusel-Mobile.zip" | sha256sum --check
+          unzip -t EpicRelease-Carrusel-Mobile.zip
+      - name: Publish temporary release asset
+        shell: bash
+        run: |
+          gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+          gh release create "$TAG" EpicRelease-Carrusel-Mobile.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "EpicRelease Carrusel Mobile" \
+            --notes "Temporary transfer of the finished 8-slide EpicRelease mobile carousel."
