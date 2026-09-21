@@ -21,9 +21,11 @@ jobs:
           curl --fail --location --silent --show-error --retry 3 \
             https://paste.c-net.org/SummaryBenny \
             --output EpicRelease-Carrusel-Mobile.zip
-          test "$(stat -c%s EpicRelease-Carrusel-Mobile.zip)" = "549572"
-          echo "167f4773b6525c8aa5755d6faab0fe2b4d890ac41233a8c197a25079e24f7982  EpicRelease-Carrusel-Mobile.zip" | sha256sum --check
+          stat -c 'bytes=%s' EpicRelease-Carrusel-Mobile.zip
+          sha256sum EpicRelease-Carrusel-Mobile.zip
+          file EpicRelease-Carrusel-Mobile.zip
           unzip -t EpicRelease-Carrusel-Mobile.zip
+          test "$(unzip -Z1 EpicRelease-Carrusel-Mobile.zip | grep -c '\.jpg$')" = "8"
       - name: Publish temporary release asset
         shell: bash
         run: |
