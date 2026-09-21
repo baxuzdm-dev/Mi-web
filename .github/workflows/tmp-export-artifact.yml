@@ -1,0 +1,28 @@
+name: Temporary EpicRelease carousel artifact
+on:
+  push:
+    branches:
+      - tmp-epicrelease-carousel-link-20260921
+    paths:
+      - .github/workflows/tmp-export-artifact.yml
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify carousel
+        shell: bash
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            https://github.com/baxuzdm-dev/Mi-web/releases/download/epicrelease-carousel-temp-20260921/EpicRelease-Carrusel-Mobile.zip \
+            --output EpicRelease-Carrusel-Mobile.zip
+          unzip -t EpicRelease-Carrusel-Mobile.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: epicrelease-carousel-mobile
+          path: EpicRelease-Carrusel-Mobile.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
