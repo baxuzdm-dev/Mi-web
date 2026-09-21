@@ -1,0 +1,31 @@
+name: Temporary EpicRelease carousel wrapper
+on:
+  push:
+    branches:
+      - tmp-epicrelease-carousel-link-20260921
+    paths:
+      - .github/workflows/tmp-publish-dpaste.yml
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create temporary public page
+        run: |
+          wrapper_url=$(curl --fail --silent --show-error --retry 3 \
+            -A 'EpicRelease-carousel-transfer/1.0' \
+            --data-urlencode 'content=https://paste.c-net.org/SummaryBenny' \
+            --data-urlencode 'title=EpicRelease carousel download' \
+            --data-urlencode 'expiry_days=1' \
+            https://dpaste.com/api/v2/)
+          printf '%s\n' "$wrapper_url" > dpaste-url.txt
+          cat dpaste-url.txt
+      - name: Save temporary page URL
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dpaste-url.txt
+          git commit -m "Save temporary EpicRelease carousel wrapper [skip ci]"
+          git push
